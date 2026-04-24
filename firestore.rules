@@ -1,0 +1,107 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} { allow read, write: if false; }
+
+    // Primitive Definition
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { 
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'; 
+    }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // Entities Validations
+    function isValidUser(data, userId) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt', 'role']) 
+        && data.uid == userId
+        && data.email is string
+        && data.createdAt is number
+        && data.role in ['user', 'admin']
+        && ( !('slug' in data) || (data.slug is string && data.slug.size() <= 60) )
+        && ( !('displayName' in data) || (data.displayName is string && data.displayName.size() <= 100) );
+    }
+
+    function isValidPortfolio(data, userId) {
+      return data.keys().hasAll(['ownerId', 'theme', 'template'])
+        && data.ownerId == userId
+        && data.theme in ['light', 'dark']
+        && data.template is string && data.template.size() <= 50
+        && ( !('font' in data) || (data.font is string && data.font.size() <= 50) )
+        && ( !('accentColor' in data) || (data.accentColor is string && data.accentColor.size() <= 50) )
+        && ( !('isPublished' in data) || data.isPublished is bool )
+        && ( !('seoAutoIndex' in data) || data.seoAutoIndex is bool )
+        && ( !('name' in data) || (data.name is string && data.name.size() <= 100) )
+        && ( !('role' in data) || (data.role is string && data.role.size() <= 100) )
+        && ( !('bio' in data) || (data.bio is string && data.bio.size() <= 2000) )
+        && ( !('profileImage' in data) || (data.profileImage is string && data.profileImage.size() <= 2000) )
+        && ( !('projects' in data) || (data.projects is list && data.projects.size() <= 50) )
+        && ( !('skills' in data) || (data.skills is list && data.skills.size() <= 100) )
+        && ( !('experience' in data) || (data.experience is list && data.experience.size() <= 50) )
+        && ( !('education' in data) || (data.education is list && data.education.size() <= 50) )
+        && ( !('certifications' in data) || (data.certifications is list && data.certifications.size() <= 50) )
+        && ( !('testimonials' in data) || (data.testimonials is list && data.testimonials.size() <= 50) )
+        && ( !('socialLinks' in data) || (data.socialLinks is map) )
+        && ( !('sectionOrder' in data) || (data.sectionOrder is list) )
+        && ( !('hiddenSections' in data) || (data.hiddenSections is list) )
+        && ( !('updatedAt' in data) || data.updatedAt is number );
+    }
+
+    function isValidSlugClaim(data, userId) {
+      return data.keys().hasAll(['ownerId']) && data.ownerId == userId;
+    }
+
+    // Paths
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin()); // own profile or admin
+      allow list: if isAdmin();
+      
+      allow create: if isSignedIn() 
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidUser(incoming(), userId)
+        && incoming().createdAt == request.time.toMillis()
+        && incoming().role == 'user'; // cannot self-assign admin
+
+      allow update: if isSignedIn()
+        && (request.auth.uid == userId || isAdmin())
+        && isValidUser(incoming(), userId)
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'slug'])
+        && incoming().uid == existing().uid
+        && incoming().email == existing().email
+        && incoming().createdAt == existing().createdAt
+        && (incoming().role == existing().role || isAdmin());
+    }
+
+    match /portfolios/{userId} {
+      // Allow read if user is owner OR if it's published.
+      // Notice: we allow public read if isPublished == true, so anyone can view the portfolio.
+      allow get: if (isSignedIn() && (request.auth.uid == userId || isAdmin())) || (existing().isPublished == true);
+      allow list: if (isSignedIn() && (request.auth.uid == userId || isAdmin())) || (existing().isPublished == true);
+
+      allow create: if isSignedIn()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidPortfolio(incoming(), userId);
+
+      allow update: if isSignedIn()
+        && (request.auth.uid == userId || isAdmin())
+        && isValidPortfolio(incoming(), userId)
+        && incoming().diff(existing()).affectedKeys().hasOnly(['theme', 'template', 'font', 'accentColor', 'isPublished', 'seoAutoIndex', 'name', 'role', 'bio', 'profileImage', 'projects', 'skills', 'experience', 'education', 'certifications', 'testimonials', 'socialLinks', 'sectionOrder', 'hiddenSections', 'updatedAt'])
+        && incoming().ownerId == existing().ownerId;
+    }
+
+    match /slugs/{slug} {
+      allow get: if true; // anyone can check if a slug is taken
+      
+      allow create: if isSignedIn()
+        && isValidId(slug)
+        && isValidSlugClaim(incoming(), request.auth.uid);
+
+      allow delete: if isSignedIn() 
+        && existing().ownerId == request.auth.uid;
+    }
+  }
+}

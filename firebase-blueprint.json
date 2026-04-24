@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Registered user profile information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "createdAt": { "type": "number", "description": "Timestamp" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "slug": { "type": "string" }
+      },
+      "required": ["uid", "email", "createdAt", "role"]
+    },
+    "Portfolio": {
+      "title": "User Portfolio",
+      "description": "Portfolio data managed by the user.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "bio": { "type": "string" },
+        "theme": { "type": "string", "enum": ["light", "dark"] },
+        "template": { "type": "string" },
+        "font": { "type": "string" },
+        "accentColor": { "type": "string" },
+        "isPublished": { "type": "boolean" },
+        "seoAutoIndex": { "type": "boolean" },
+        "projects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "description": { "type": "string" },
+              "imageBg": { "type": "string" },
+              "link": { "type": "string" }
+            }
+          }
+        },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["ownerId", "theme", "template"]
+    },
+    "SlugClaim": {
+      "title": "Slug Claim",
+      "description": "Ensures global uniqueness of custom URLs.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string" }
+      },
+      "required": ["ownerId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile containing roles and basic account info."
+    },
+    "/portfolios/{userId}": {
+      "schema": "Portfolio",
+      "description": "Portfolio content and configuration for the user. ID matches userId."
+    },
+    "/slugs/{slug}": {
+      "schema": "SlugClaim",
+      "description": "Global registry of claimed slugs to ensure uniqueness."
+    }
+  }
+}
