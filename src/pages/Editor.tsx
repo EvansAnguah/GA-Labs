@@ -702,8 +702,8 @@ export default function Editor() {
                        <div>
                          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">Core Skills</h4>
                          <div className="flex flex-wrap gap-2">
-                           {localData.skills.map((skill: string) => (
-                             <span key={skill} className="bg-slate-50 text-slate-600 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-slate-200">
+                           {localData.skills.map((skill: string, index: number) => (
+                             <span key={`${skill}-${index}`} className="bg-slate-50 text-slate-600 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-slate-200">
                                {skill}
                              </span>
                            ))}

@@ -62,7 +62,6 @@ service cloud.firestore {
         && isValidId(userId)
         && request.auth.uid == userId
         && isValidUser(incoming(), userId)
-        && incoming().createdAt == request.time.toMillis()
         && incoming().role == 'user'; // cannot self-assign admin
 
       allow update: if isSignedIn()
@@ -89,7 +88,7 @@ service cloud.firestore {
       allow update: if isSignedIn()
         && (request.auth.uid == userId || isAdmin())
         && isValidPortfolio(incoming(), userId)
-        && incoming().diff(existing()).affectedKeys().hasOnly(['theme', 'template', 'font', 'accentColor', 'isPublished', 'seoAutoIndex', 'name', 'role', 'bio', 'profileImage', 'projects', 'skills', 'experience', 'education', 'certifications', 'testimonials', 'socialLinks', 'sectionOrder', 'hiddenSections', 'updatedAt'])
+        && incoming().diff(existing()).affectedKeys().hasOnly(['ownerId', 'theme', 'template', 'font', 'accentColor', 'isPublished', 'seoAutoIndex', 'name', 'role', 'bio', 'profileImage', 'projects', 'skills', 'experience', 'education', 'certifications', 'testimonials', 'socialLinks', 'sectionOrder', 'hiddenSections', 'updatedAt'])
         && incoming().ownerId == existing().ownerId;
     }
 

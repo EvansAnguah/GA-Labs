@@ -6,13 +6,17 @@ import { Navigate } from 'react-router-dom';
 import { Users, Activity, LayoutDashboard, Globe } from 'lucide-react';
 
 export default function AdminDashboard() {
-  const { user } = useAuthStore();
+  const { user, profile, loading: authLoading } = useAuthStore();
   const [users, setUsers] = useState<any[]>([]);
   const [portfolios, setPortfolios] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      if (profile?.role !== 'admin') {
+        setLoading(false);
+        return;
+      }
       try {
         const usersSnap = await getDocs(collection(db, 'users'));
         const portfoliosSnap = await getDocs(collection(db, 'portfolios'));
@@ -25,18 +29,25 @@ export default function AdminDashboard() {
         setLoading(false);
       }
     };
-    // Normally, protect this request with a checking 'admin' role in your store / token
-    // For demo/prototype we'll just attempt it. The rule should protect read if not allowed, 
-    // but right now rules don't cover `list` for users strictly other than `userId == auth.uid`.
-    // Wait, the rules for `users/` only allow `get` if `userId == auth.uid`.
-    // Let me update the firestore.rules to allow admin to read all.
-    fetchData();
-  }, []);
+    
+    if (!authLoading) {
+       fetchData();
+    }
+  }, [profile, authLoading]);
 
-  // For this prototype, I'll bypass strict rule blocks by updating the rules for admin.
-  // Actually let's assume we render what we have.
-
+  if (authLoading) return <div className="p-8">Loading administration dashboard...</div>;
   if (!user) return <Navigate to="/login" replace />;
+  if (profile?.role !== 'admin') {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Access Denied</h1>
+          <p className="text-slate-500 mb-4">You do not have permission to view this page.</p>
+          <a href="/editor" className="text-emerald-500 hover:text-emerald-600 font-medium">Return to Editor</a>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) return <div className="p-8">Loading administration dashboard...</div>;
 

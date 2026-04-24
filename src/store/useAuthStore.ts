@@ -31,8 +31,8 @@ export const useAuthStore = create<AuthState>((set) => ({
           // Create initial user document
           profileData = {
             uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            displayName: firebaseUser.displayName,
+            email: firebaseUser.email || '',
+            displayName: firebaseUser.displayName || '',
             createdAt: Date.now(),
             role: 'user'
           };

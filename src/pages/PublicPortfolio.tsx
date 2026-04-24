@@ -153,8 +153,8 @@ export default function PublicPortfolio() {
             <div>
               <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8">Core Skills</h2>
               <div className="flex flex-wrap gap-2">
-                {data.skills.map(skill => (
-                  <span key={skill} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full">
+                {data.skills.map((skill, index) => (
+                  <span key={`${skill}-${index}`} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full">
                     {skill}
                   </span>
                 ))}
