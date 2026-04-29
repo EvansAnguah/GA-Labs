@@ -3,8 +3,14 @@ import { db } from '../lib/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 export type Template = 'editorial' | 'minimalist';
-export type FontPairing = 'serif-sans' | 'mono';
-export type AccentColor = 'emerald' | 'indigo' | 'rose' | 'slate';
+export type FontPairing = 'serif-sans' | 'mono' | 'outfit' | 'jakarta' | 'space' | 'cormorant' | 'plus-jakarta';
+export type AccentColor = 'emerald' | 'indigo' | 'rose' | 'slate' | 'amber' | 'violet';
+
+export interface NavLink {
+  id: string;
+  label: string;
+  url: string;
+}
 
 export interface Project {
   id: string;
@@ -44,6 +50,7 @@ export interface PortfolioData {
   accentColor: AccentColor;
   isPublished: boolean;
   seoAutoIndex: boolean;
+  navLinks?: NavLink[];
   projects: Project[];
   skills?: string[];
   experience?: Experience[];
@@ -60,11 +67,11 @@ interface PortfolioStore {
   data: PortfolioData | null;
   loading: boolean;
   deviceMode: 'desktop' | 'mobile';
-  sidebarTab: 'dashboard' | 'search' | 'layers' | 'home';
+  sidebarTab: 'dashboard' | 'search' | 'layers' | 'home' | 'navigation';
   fetchPortfolio: (uid: string) => Promise<void>;
   updateData: (updates: Partial<PortfolioData>, uid: string) => Promise<void>;
   setDeviceMode: (mode: 'desktop' | 'mobile') => void;
-  setSidebarTab: (tab: 'dashboard' | 'search' | 'layers' | 'home') => void;
+  setSidebarTab: (tab: 'dashboard' | 'search' | 'layers' | 'home' | 'navigation') => void;
 }
 
 const defaultPortfolio: Omit<PortfolioData, 'ownerId'> = {
@@ -77,6 +84,11 @@ const defaultPortfolio: Omit<PortfolioData, 'ownerId'> = {
   accentColor: 'slate',
   isPublished: false,
   seoAutoIndex: false,
+  navLinks: [
+    { id: '1', label: 'Work', url: '#projects' },
+    { id: '2', label: 'About', url: '#about' },
+    { id: '3', label: 'Contact', url: '#contact' }
+  ],
   projects: [],
   updatedAt: Date.now()
 };
