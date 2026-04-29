@@ -54,27 +54,59 @@ export default function PublicPortfolio() {
   }
 
   const isMono = data.font === 'mono';
+  
+  const fontClass = cn(
+    data.font === 'mono' ? 'font-mono' : '',
+    data.font === 'serif-sans' ? 'font-sans' : '',
+    data.font === 'outfit' ? 'font-[Outfit]' : '',
+    data.font === 'jakarta' ? 'font-[Plus_Jakarta_Sans]' : '',
+    data.font === 'space' ? 'font-[Space_Grotesk]' : '',
+    data.font === 'cormorant' ? 'font-[Cormorant_Garamond]' : ''
+  );
+
+  const serifClass = cn(
+    (data.font === 'serif-sans' || data.font === 'cormorant') ? 'font-serif' : 'font-sans'
+  );
 
   return (
-    <div className={cn("min-h-screen bg-white text-slate-900", isMono ? "font-mono" : "font-sans", data.theme === 'dark' ? "bg-slate-950 text-white" : "")}>
-      <nav className="max-w-4xl mx-auto px-6 py-12 flex justify-between items-center">
-        <div className={cn("text-xl font-bold uppercase tracking-widest", !isMono && "font-serif")}>
+    <div className={cn("min-h-screen bg-white text-slate-900 transition-colors duration-500", fontClass, data.theme === 'dark' ? "bg-slate-950 text-white" : "")}>
+      <nav className="max-w-4xl mx-auto px-6 py-12 flex justify-between items-center relative z-50">
+        <div className={cn("text-xl font-bold uppercase tracking-widest", serifClass)}>
           {data.name || 'Portfolio'}
         </div>
-        <div className="space-x-8 text-xs font-medium uppercase tracking-widest text-slate-500">
-          <span className={cn(
-            "border-b pb-1 font-bold", 
-            data.theme === 'dark' ? "text-white border-white" : "text-slate-900 border-slate-900",
-            data.accentColor !== 'slate' && `text-${data.accentColor}-500 border-${data.accentColor}-500`
-          )}>Work</span>
-          <span>About</span>
-          <span>Contact</span>
+        <div className="flex gap-8 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+          {(data.navLinks || []).map((link) => (
+            <a 
+              key={link.id} 
+              href={link.url}
+              className={cn(
+                "transition-all duration-300 hover:scale-105 relative group pb-1",
+                data.accentColor === 'emerald' && "hover:text-emerald-500",
+                data.accentColor === 'indigo' && "hover:text-indigo-500",
+                data.accentColor === 'rose' && "hover:text-rose-500",
+                data.accentColor === 'amber' && "hover:text-amber-500",
+                data.accentColor === 'violet' && "hover:text-violet-500",
+                data.accentColor === 'slate' && (data.theme === 'dark' ? "hover:text-white" : "hover:text-slate-900")
+              )}
+            >
+              {link.label}
+              <span className={cn(
+                "absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full",
+                data.accentColor === 'emerald' && "bg-emerald-500",
+                data.accentColor === 'indigo' && "bg-indigo-500",
+                data.accentColor === 'rose' && "bg-rose-500",
+                data.accentColor === 'amber' && "bg-amber-500",
+                data.accentColor === 'violet' && "bg-violet-500",
+                data.accentColor === 'slate' && (data.theme === 'dark' ? "bg-white" : "bg-slate-900")
+              )} />
+            </a>
+          ))}
         </div>
       </nav>
 
       <header className="max-w-4xl mx-auto px-6 py-32 md:py-48 flex flex-col md:flex-row gap-16 items-center">
         <div className="flex-1 text-center md:text-left">
-          <h1 className={cn("text-5xl md:text-8xl font-medium leading-[0.9] mb-10", !isMono && "font-serif tracking-tighter")}>
+          <h1 className={cn("text-5xl md:text-8xl font-medium leading-[0.9] mb-10", serifClass, "tracking-tighter")}>
             {data.bio}
           </h1>
           <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12">
@@ -84,7 +116,13 @@ export default function PublicPortfolio() {
             <div className="hidden md:block w-12 h-[1px] bg-slate-200" />
             <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-slate-400">
               <span>Based in Earth</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", 
+                data.accentColor === 'emerald' ? "bg-emerald-500" : 
+                data.accentColor === 'indigo' ? "bg-indigo-500" :
+                data.accentColor === 'rose' ? "bg-rose-500" : 
+                data.accentColor === 'amber' ? "bg-amber-500" :
+                data.accentColor === 'violet' ? "bg-violet-500" : "bg-slate-900"
+              )} />
               <span>Available for Work</span>
             </div>
           </div>
@@ -131,11 +169,19 @@ export default function PublicPortfolio() {
                     </div>
                     <div className="flex items-start justify-between px-2">
                       <div>
-                        <h3 className={cn("text-3xl font-medium mb-3", !isMono && "font-serif tracking-tight")}>{p.title}</h3>
+                        <h3 className={cn("text-3xl font-medium mb-3 tracking-tight", serifClass)}>{p.title}</h3>
                         {p.description && <p className="text-sm text-slate-500 leading-relaxed max-w-[90%]">{p.description}</p>}
                       </div>
                       {p.link && (
-                        <div className="p-2 rounded-full bg-slate-100 text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all duration-500">
+                        <div className={cn(
+                          "p-2 rounded-full transition-all duration-500",
+                          data.accentColor === 'emerald' ? "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white" :
+                          data.accentColor === 'indigo' ? "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white" :
+                          data.accentColor === 'rose' ? "bg-rose-50 text-rose-600 group-hover:bg-rose-600 group-hover:text-white" :
+                          data.accentColor === 'amber' ? "bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white" :
+                          data.accentColor === 'violet' ? "bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white" :
+                          "bg-slate-100 text-slate-400 group-hover:bg-slate-900 group-hover:text-white"
+                        )}>
                           <ArrowUpRight className="w-5 h-5" />
                         </div>
                       )}
@@ -162,8 +208,14 @@ export default function PublicPortfolio() {
                    {exp.startDate} <span className="mx-1 text-slate-200">—</span> {exp.endDate || 'Present'}
                 </div>
                 <div className="md:col-span-3">
-                  <h3 className={cn("text-3xl font-medium mb-2", !isMono && "font-serif tracking-tight")}>{exp.role}</h3>
-                  <div className="text-lg text-emerald-600 font-medium mb-6 italic">{exp.company}</div>
+                  <h3 className={cn("text-3xl font-medium mb-2 tracking-tight", serifClass)}>{exp.role}</h3>
+                  <div className={cn("text-lg font-medium mb-6 italic", 
+                     data.accentColor === 'emerald' ? "text-emerald-600" :
+                     data.accentColor === 'indigo' ? "text-indigo-600" :
+                     data.accentColor === 'rose' ? "text-rose-600" :
+                     data.accentColor === 'amber' ? "text-amber-600" :
+                     data.accentColor === 'violet' ? "text-violet-600" : "text-slate-600"
+                  )}>{exp.company}</div>
                   <p className="text-slate-500 leading-relaxed text-lg max-w-2xl">{exp.description}</p>
                 </div>
               </div>
@@ -183,8 +235,14 @@ export default function PublicPortfolio() {
                 <div className="space-y-12">
                   {data.education.map((edu, index) => (
                     <div key={edu.id || `edu-${index}`}>
-                      <div className="text-xs text-emerald-400 font-bold mb-3">{edu.year}</div>
-                      <h3 className={cn("text-2xl font-medium mb-2", !isMono && "font-serif")}>{edu.degree}</h3>
+                      <div className={cn("text-xs font-bold mb-3", 
+                        data.accentColor === 'emerald' ? "text-emerald-400" :
+                        data.accentColor === 'indigo' ? "text-indigo-400" :
+                        data.accentColor === 'rose' ? "text-rose-400" :
+                        data.accentColor === 'amber' ? "text-amber-400" :
+                        data.accentColor === 'violet' ? "text-violet-400" : "text-white"
+                      )}>{edu.year}</div>
+                      <h3 className={cn("text-2xl font-medium mb-2", serifClass)}>{edu.degree}</h3>
                       <p className="text-slate-400">{edu.institution}</p>
                     </div>
                   ))}
@@ -209,14 +267,18 @@ export default function PublicPortfolio() {
       )}
 
       <footer className="max-w-4xl mx-auto px-6 py-32 border-t border-slate-100 text-center">
-        <h2 className={cn("text-4xl md:text-6xl font-medium mb-12", !isMono && "font-serif tracking-tight")}>
+        <h2 className={cn("text-4xl md:text-6xl font-medium mb-12 tracking-tight", serifClass)}>
           Let's create something <br className="hidden md:block" /> meaningful together.
         </h2>
         
         <div className="flex flex-col items-center gap-8">
           <a href={`mailto:${data.socialLinks?.email || ''}`} className={cn(
             "inline-flex items-center gap-3 px-10 py-5 rounded-full text-white font-bold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all",
-            data.accentColor === 'slate' ? 'bg-slate-900' : `bg-${data.accentColor}-500`
+            data.accentColor === 'emerald' ? "bg-emerald-500" :
+            data.accentColor === 'indigo' ? "bg-indigo-500" :
+            data.accentColor === 'rose' ? "bg-rose-500" :
+            data.accentColor === 'amber' ? "bg-amber-500" :
+            data.accentColor === 'violet' ? "bg-violet-500" : "bg-slate-900"
           )}>
             <Mail className="w-5 h-5" />
             Get in touch

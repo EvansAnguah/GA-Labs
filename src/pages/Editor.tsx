@@ -64,6 +64,17 @@ export default function Editor() {
     indigo: 'bg-indigo-500',
     rose: 'bg-rose-500',
     slate: 'bg-slate-900',
+    amber: 'bg-amber-500',
+    violet: 'bg-violet-500',
+  };
+
+  const accentTextColorMap: Record<string, string> = {
+    emerald: 'text-emerald-600',
+    indigo: 'text-indigo-600',
+    rose: 'text-rose-600',
+    slate: 'text-slate-900',
+    amber: 'text-amber-600',
+    violet: 'text-violet-600',
   };
 
   if (loading || !localData) {
@@ -77,14 +88,114 @@ export default function Editor() {
   const renderRightPanel = () => {
     if (sidebarTab === 'dashboard') {
       return (
-        <div className="p-6">
-          <div className="text-[10px] uppercase tracking-[0.1em] font-bold text-slate-400 mb-6 flex items-center gap-2">
-            <LayoutDashboard className="w-3.5 h-3.5" /> Dashboard
+        <div className="p-6 overflow-y-auto max-h-full space-y-8">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.1em] font-bold text-slate-400 mb-6 flex items-center gap-2">
+              <LayoutDashboard className="w-3.5 h-3.5" /> Dashboard
+            </div>
+            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-4">
+              <h3 className="text-sm font-semibold text-slate-800 mb-1">Portfolio Views</h3>
+              <p className="text-3xl font-bold text-slate-900">1,204</p>
+              <p className="text-xs text-emerald-600 mt-2 font-medium">+12% this week</p>
+            </div>
           </div>
-          <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-4">
-            <h3 className="text-sm font-semibold text-slate-800 mb-1">Portfolio Views</h3>
-            <p className="text-3xl font-bold text-slate-900">1,204</p>
-            <p className="text-xs text-emerald-600 mt-2 font-medium">+12% this week</p>
+
+          <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+            <h3 className="text-sm font-semibold text-slate-800 mb-4 uppercase tracking-widest text-[10px] text-slate-400">Recent Activity</h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-xs">
+                <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                  <Database className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-medium text-slate-700">Project "Nova" updated</p>
+                  <p className="text-slate-400">2 hours ago</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (sidebarTab === 'navigation') {
+      return (
+        <div className="p-6 overflow-y-auto max-h-full space-y-8">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.1em] font-bold text-slate-400 mb-6 flex items-center gap-2">
+              <Plus className="w-3.5 h-3.5" /> Site Navigation
+            </div>
+            <p className="text-xs text-slate-500 mb-6">Manage your menu links and create new pages for your portfolio.</p>
+          </div>
+
+          <div className="space-y-4">
+            {(localData.navLinks || []).map((link: any, idx: number) => (
+              <div key={link.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm group relative">
+                 <button 
+                  onClick={() => {
+                    const newLinks = [...(localData.navLinks || [])];
+                    newLinks.splice(idx, 1);
+                    handleChange('navLinks', newLinks);
+                  }}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg z-10"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Menu Label</label>
+                    <input 
+                      type="text" 
+                      value={link.label}
+                      onChange={(e) => {
+                        const newLinks = [...(localData.navLinks || [])];
+                        newLinks[idx] = { ...newLinks[idx], label: e.target.value };
+                        handleChange('navLinks', newLinks);
+                      }}
+                      placeholder="e.g. Work, About, Blog"
+                      className="w-full text-sm font-medium text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100 focus:border-emerald-500 focus:bg-white outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Destination URL</label>
+                    <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-100 focus-within:bg-white focus-within:border-emerald-500 transition-all">
+                      <Link2 className="w-3.5 h-3.5 text-slate-300" />
+                      <input 
+                        type="text" 
+                        value={link.url}
+                        onChange={(e) => {
+                          const newLinks = [...(localData.navLinks || [])];
+                          newLinks[idx] = { ...newLinks[idx], url: e.target.value };
+                          handleChange('navLinks', newLinks);
+                        }}
+                        placeholder="e.g. #projects or https://..."
+                        className="w-full text-xs font-mono text-slate-500 bg-transparent outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            <button 
+              onClick={() => {
+                const newId = Date.now().toString();
+                handleChange('navLinks', [...(localData.navLinks || []), { id: newId, label: 'New Link', url: '#' }]);
+              }}
+              className="w-full py-4 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-xs font-bold uppercase hover:border-emerald-300 hover:text-emerald-500 hover:bg-emerald-50/30 transition-all flex items-center justify-center gap-2"
+            >
+              <Plus className="w-4 h-4" /> Add Menu Item
+            </button>
+          </div>
+          
+          <div className="pt-8 border-t border-slate-100">
+            <h3 className="text-xs font-bold text-slate-800 mb-4 uppercase tracking-widest">Page Tip</h3>
+            <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 flex gap-3">
+              <Sparkles className="w-5 h-5 text-amber-500 shrink-0" />
+              <p className="text-[11px] text-amber-800 leading-relaxed">
+                You can link to external pages or use anchor tags (like <code className="bg-amber-100 px-1 rounded">#projects</code>) to link to specific sections on your portfolio.
+              </p>
+            </div>
           </div>
         </div>
       );
@@ -400,34 +511,53 @@ export default function Editor() {
 
             <div>
               <label className="text-[11px] font-semibold text-slate-700 block mb-2.5">Typography</label>
-              <div className="relative">
-                <select 
-                  value={localData.font}
-                  onChange={(e) => handleChange('font', e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-slate-50/50 text-slate-700 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-slate-200"
-                >
-                  <option value="serif-sans">Playfair Display + Inter</option>
-                  <option value="mono">SF Pro Mono</option>
-                </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
-                </div>
+              <div className="grid grid-cols-2 gap-2">
+                {(['serif-sans', 'mono', 'outfit', 'jakarta', 'space', 'cormorant'] as const).map(f => (
+                  <button 
+                    key={f}
+                    onClick={() => handleChange('font', f)}
+                    className={cn(
+                      "p-3 rounded-xl border text-left transition-all",
+                      localData.font === f ? "bg-slate-900 text-white border-slate-900 shadow-lg" : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                    )}
+                  >
+                    <div className="text-[9px] font-bold uppercase mb-1 opacity-60 tracking-widest leading-none">{f.split('-')[0]}</div>
+                    <div className={cn(
+                      "text-sm leading-tight truncate",
+                      f === 'serif-sans' && "font-serif",
+                      f === 'mono' && "font-mono",
+                      f === 'outfit' && "font-[Outfit]",
+                      f === 'jakarta' && "font-[Plus_Jakarta_Sans]",
+                      f === 'space' && "font-[Space_Grotesk]",
+                      f === 'cormorant' && "font-[Cormorant_Garamond]"
+                    )}>Type Spec</div>
+                  </button>
+                ))}
               </div>
             </div>
 
             <div>
               <label className="text-[11px] font-semibold text-slate-700 block mb-2.5">Accent Color</label>
-              <div className="flex gap-2.5">
-                {(['emerald', 'indigo', 'rose', 'slate'] as const).map(color => (
-                  <button
+              <div className="grid grid-cols-3 gap-2">
+                {(['emerald', 'indigo', 'rose', 'slate', 'amber', 'violet'] as const).map(color => (
+                  <button 
                     key={color}
                     onClick={() => handleChange('accentColor', color)}
                     className={cn(
-                      "w-7 h-7 rounded-full flex items-center justify-center transition-all",
-                      accentColorMap[color],
-                      localData.accentColor === color ? `ring-2 ring-offset-2 ring-[${color === 'slate' ? '#0f172a' : accentColorMap[color].split('-')[1]}] scale-110 shadow-sm` : "hover:scale-105"
+                      "flex items-center gap-2 p-2 rounded-lg border text-[10px] font-medium transition-all",
+                      localData.accentColor === color ? "bg-slate-900 text-white border-slate-900 shadow-md" : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
                     )}
-                  />
+                  >
+                    <div className={cn("w-3 h-3 rounded-full shadow-inner", {
+                      'bg-emerald-500': color === 'emerald',
+                      'bg-indigo-500': color === 'indigo',
+                      'bg-rose-500': color === 'rose',
+                      'bg-slate-900': color === 'slate',
+                      'bg-amber-500': color === 'amber',
+                      'bg-violet-500': color === 'violet'
+                    })} />
+                    {color}
+                  </button>
                 ))}
               </div>
             </div>
@@ -513,6 +643,12 @@ export default function Editor() {
             className={cn("p-2 rounded-lg transition-colors", sidebarTab === 'dashboard' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
           >
             <LayoutDashboard className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={() => setSidebarTab('navigation')}
+            className={cn("p-2 rounded-lg transition-colors", sidebarTab === 'navigation' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
+          >
+            <Link2 className="w-5 h-5" />
           </button>
           <button 
             onClick={() => setSidebarTab('search')}
@@ -614,23 +750,45 @@ export default function Editor() {
             {/* User Site Preview Content */}
             <div className={cn(
               "flex-1 overflow-y-auto bg-white custom-scrollbar",
-              localData.font === 'mono' ? 'font-mono' : 'font-sans'
+              localData.font === 'mono' ? 'font-mono' : '',
+              localData.font === 'outfit' ? 'font-[Outfit]' : '',
+              localData.font === 'jakarta' ? 'font-[Plus_Jakarta_Sans]' : '',
+              localData.font === 'space' ? 'font-[Space_Grotesk]' : '',
+              localData.font === 'cormorant' ? 'font-[Cormorant_Garamond]' : '',
+              localData.font === 'serif-sans' ? 'font-sans' : ''
             )}>
               <div className="p-8 sm:p-12 min-h-full">
                 <nav className="flex justify-between items-center mb-16 sm:mb-24">
                   <div className={cn(
                     "text-lg font-bold uppercase tracking-widest truncate max-w-[200px]",
-                    localData.font === 'mono' ? '' : 'font-serif'
+                    localData.font === 'serif-sans' || localData.font === 'cormorant' ? 'font-serif' : ''
                   )}>
                     {localData.name || 'Your Name'}
                   </div>
                   {deviceMode === 'desktop' && (
-                    <div className="space-x-8 text-[11px] font-medium text-slate-400 uppercase tracking-widest shrink-0">
-                      <span className={cn("text-slate-900 border-b pb-1 font-bold", localData.accentColor !== 'slate' && `border-${localData.accentColor}-500 text-${localData.accentColor}-600`)}>
-                        Work
-                      </span>
-                      <span className="hover:text-slate-600 transition-colors">About</span>
-                      <span className="hover:text-slate-600 transition-colors">Contact</span>
+                    <div className="flex gap-8 text-[11px] font-bold text-slate-400 uppercase tracking-widest shrink-0">
+                      {(localData.navLinks || []).map((link: any) => (
+                        <span key={link.id} className={cn(
+                          "transition-colors relative group pb-1 cursor-default",
+                          localData.accentColor === 'emerald' && "hover:text-emerald-500",
+                          localData.accentColor === 'indigo' && "hover:text-indigo-500",
+                          localData.accentColor === 'rose' && "hover:text-rose-600",
+                          localData.accentColor === 'amber' && "hover:text-amber-500",
+                          localData.accentColor === 'violet' && "hover:text-violet-500",
+                          localData.accentColor === 'slate' && "hover:text-slate-900"
+                        )}>
+                          {link.label}
+                          <span className={cn(
+                            "absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full",
+                            localData.accentColor === 'emerald' && "bg-emerald-500",
+                            localData.accentColor === 'indigo' && "bg-indigo-500",
+                            localData.accentColor === 'rose' && "bg-rose-500",
+                            localData.accentColor === 'amber' && "bg-amber-500",
+                            localData.accentColor === 'violet' && "bg-violet-500",
+                            localData.accentColor === 'slate' && "bg-slate-900"
+                          )} />
+                        </span>
+                      ))}
                     </div>
                   )}
                   {deviceMode === 'mobile' && (
