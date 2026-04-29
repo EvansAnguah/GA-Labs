@@ -162,6 +162,13 @@ export default function Editor() {
                   placeholder="LinkedIn URL"
                   value={localData.socialLinks?.linkedin || ''} 
                   onChange={(e) => handleChange('socialLinks', { ...localData.socialLinks, linkedin: e.target.value })}
+                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white mb-2" 
+                />
+                <input 
+                  type="text" 
+                  placeholder="GitHub URL"
+                  value={localData.socialLinks?.github || ''} 
+                  onChange={(e) => handleChange('socialLinks', { ...localData.socialLinks, github: e.target.value })}
                   className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white" 
                 />
               </div>
@@ -331,6 +338,13 @@ export default function Editor() {
                       placeholder="Project URL"
                       value={p.link || ''} 
                       onChange={(e) => handleUpdateProject(i, 'link', e.target.value)}
+                      className="w-full text-[10px] p-1.5 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none mb-1 text-slate-500"
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Project Image URL"
+                      value={p.imageUrl || ''} 
+                      onChange={(e) => handleUpdateProject(i, 'imageUrl', e.target.value)}
                       className="w-full text-[10px] p-1.5 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none mb-1 text-slate-500"
                     />
                     <div className="flex items-center gap-2 mt-2 text-[10px]">
@@ -644,13 +658,16 @@ export default function Editor() {
                       )}>
                         {localData.projects?.map((p: any, index: number) => (
                           <div key={p.id || `project-${index}`} className="group cursor-pointer">
-                            <div className={cn("aspect-[4/5] rounded-xl mb-4 overflow-hidden relative", p.imageBg || 'bg-slate-100')}>
-                              {/* Placeholder for project image */}
-                              <div className="absolute inset-0 bg-slate-900/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <span className="bg-white/90 text-slate-900 text-xs font-semibold px-4 py-2 rounded-full shadow-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                                  View Case Study
-                                </span>
-                              </div>
+                            <div className={cn("aspect-[4/5] rounded-xl mb-4 overflow-hidden relative shadow-sm", p.imageBg || 'bg-slate-100')}>
+                              {p.imageUrl ? (
+                                <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                              ) : (
+                                <div className="absolute inset-0 bg-slate-900/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <span className="bg-white/90 text-slate-900 text-xs font-semibold px-4 py-2 rounded-full shadow-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                                    View Project
+                                  </span>
+                                </div>
+                              )}
                             </div>
                             <h3 className={cn("font-medium text-slate-900 text-sm mb-1 line-clamp-1", localData.font === 'mono' ? '' : 'font-serif')}>
                               {p.title || 'Untitled Project'}

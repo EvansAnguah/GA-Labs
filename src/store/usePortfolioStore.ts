@@ -11,6 +11,7 @@ export interface Project {
   title: string;
   description?: string;
   imageBg: string;
+  imageUrl?: string;
   link?: string;
   date?: string;
 }
