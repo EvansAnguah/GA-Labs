@@ -23,7 +23,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-[#F1F5F9] font-sans">
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center">
         <div className="w-16 h-16 rounded-2xl bg-[#0F172A] flex items-center justify-center mb-6 shadow-md">
-          <div className="text-2xl font-serif font-bold italic tracking-tighter text-emerald-400">GA</div>
+          <img src="https://images.pexels.com/photos/37324423/pexels-photo-37324423.png" alt="Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
         </div>
         <h1 className="text-2xl font-semibold text-slate-900 mb-2">Welcome to GA Studio</h1>
         <p className="text-slate-500 mb-8 text-center text-sm">

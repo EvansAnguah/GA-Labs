@@ -112,7 +112,8 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     
     try {
       const docRef = doc(db, 'portfolios', uid);
-      await updateDoc(docRef, updates);
+      // Ensure updatedAt is sent to server as well
+      await updateDoc(docRef, { ...updates, updatedAt: Date.now() });
     } catch (error) {
       console.error("Error updating portfolio:", error);
     }
