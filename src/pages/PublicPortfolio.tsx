@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Linkedin, Github, Mail, ArrowUpRight } from 'lucide-react';
 import { PortfolioData } from '../store/usePortfolioStore';
 import { cn } from '../lib/utils';
 
@@ -72,17 +72,25 @@ export default function PublicPortfolio() {
         </div>
       </nav>
 
-      <header className="max-w-4xl mx-auto px-6 pt-16 pb-24 text-center md:text-left flex flex-col md:flex-row gap-12 items-center">
-        <div className="flex-1">
-          <h1 className={cn("text-4xl md:text-6xl font-medium leading-[1.1] mb-6", !isMono && "font-serif tracking-tight")}>
+      <header className="max-w-4xl mx-auto px-6 py-32 md:py-48 flex flex-col md:flex-row gap-16 items-center">
+        <div className="flex-1 text-center md:text-left">
+          <h1 className={cn("text-5xl md:text-8xl font-medium leading-[0.9] mb-10", !isMono && "font-serif tracking-tighter")}>
             {data.bio}
           </h1>
-          <p className="text-lg text-slate-500 italic">
-            {data.role}
-          </p>
+          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12">
+            <p className="text-xl text-slate-500 italic font-medium">
+              {data.role}
+            </p>
+            <div className="hidden md:block w-12 h-[1px] bg-slate-200" />
+            <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-slate-400">
+              <span>Based in Earth</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Available for Work</span>
+            </div>
+          </div>
         </div>
         {data.profileImage && (
-          <div className="w-48 h-48 rounded-full overflow-hidden shrink-0 border border-slate-200">
+          <div className="w-56 h-56 md:w-64 md:h-64 rounded-3xl overflow-hidden shrink-0 border-8 border-slate-50 shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500">
             <img src={data.profileImage} alt={data.name} className="w-full h-full object-cover" />
           </div>
         )}
@@ -90,39 +98,73 @@ export default function PublicPortfolio() {
 
       {/* Projects */}
       {!data.hiddenSections?.includes('projects') && (
-        <section className="max-w-4xl mx-auto px-6 py-24 border-t border-slate-100">
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-12">Selected Works</h2>
-          <div className={cn("grid gap-12", data.template === 'minimalist' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2')}>
-            {data.projects?.map((p, index) => (
-               <a href={p.link || '#'} key={p.id || `project-${index}`} className="group block">
-                  <div className={cn("aspect-[4/3] md:aspect-[4/5] rounded-xl mb-6 overflow-hidden relative", p.imageBg || 'bg-slate-100')}>
-                     {/* We would use real images, but sticking to placeholders for now */}
-                     <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="bg-white/90 text-slate-900 text-xs font-semibold px-4 py-2 rounded-full shadow-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                          View Case Study
-                        </span>
-                     </div>
-                  </div>
-                  <h3 className={cn("text-2xl font-medium mb-2", !isMono && "font-serif")}>{p.title}</h3>
-                  {p.description && <p className="text-sm text-slate-500 mb-2">{p.description}</p>}
-               </a>
-            ))}
+        <section className="bg-slate-50/50 py-32 rounded-[3rem] mx-4 border border-slate-100">
+          <div className="max-w-4xl mx-auto px-6">
+            <div className="flex items-end justify-between mb-20">
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Selected Works</h2>
+              <div className="h-[1px] flex-1 mx-8 bg-slate-200 hidden md:block" />
+              <p className="text-xs text-slate-500 font-medium hidden md:block">01 — PROJECTS</p>
+            </div>
+            <div className={cn("grid gap-20", data.template === 'minimalist' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2')}>
+              {data.projects?.map((p, index) => (
+                 <a 
+                   href={p.link || '#'} 
+                   key={p.id || `project-${index}`} 
+                   className="group block"
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                 >
+                    <div className={cn("aspect-[4/3] md:aspect-[4/5] rounded-3xl mb-8 overflow-hidden relative shadow-md bg-white transition-all duration-700 ease-out group-hover:shadow-3xl group-hover:-translate-y-4", p.imageBg)}>
+                       {p.imageUrl ? (
+                          <img 
+                            src={p.imageUrl} 
+                            alt={p.title} 
+                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                          />
+                       ) : (
+                          <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                             <span className="bg-white text-slate-900 text-[10px] font-bold uppercase tracking-widest px-6 py-3 rounded-full shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                               View Project
+                             </span>
+                          </div>
+                       )}
+                    </div>
+                    <div className="flex items-start justify-between px-2">
+                      <div>
+                        <h3 className={cn("text-3xl font-medium mb-3", !isMono && "font-serif tracking-tight")}>{p.title}</h3>
+                        {p.description && <p className="text-sm text-slate-500 leading-relaxed max-w-[90%]">{p.description}</p>}
+                      </div>
+                      {p.link && (
+                        <div className="p-2 rounded-full bg-slate-100 text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all duration-500">
+                          <ArrowUpRight className="w-5 h-5" />
+                        </div>
+                      )}
+                    </div>
+                 </a>
+              ))}
+            </div>
           </div>
         </section>
       )}
 
       {/* Experience */}
       {!data.hiddenSections?.includes('experience') && data.experience && data.experience.length > 0 && (
-        <section className="max-w-4xl mx-auto px-6 py-24 border-t border-slate-100">
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-16">Experience</h2>
-          <div className="space-y-12">
+        <section className="max-w-4xl mx-auto px-6 py-32">
+          <div className="flex items-center gap-4 mb-20 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
+             <span>02</span>
+             <span>Experience</span>
+             <div className="h-[1px] w-12 bg-slate-200" />
+          </div>
+          <div className="space-y-24">
             {data.experience.map((exp, index) => (
-              <div key={exp.id || `exp-${index}`} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="text-sm text-slate-500 font-medium pt-1">{exp.startDate} — {exp.endDate || 'Present'}</div>
+              <div key={exp.id || `exp-${index}`} className="group grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div className="text-sm font-bold text-slate-300 group-hover:text-slate-900 transition-colors uppercase tracking-widest pt-2">
+                   {exp.startDate} <span className="mx-1 text-slate-200">—</span> {exp.endDate || 'Present'}
+                </div>
                 <div className="md:col-span-3">
-                  <h3 className="text-xl font-semibold mb-1">{exp.role}</h3>
-                  <div className="text-slate-500 italic mb-4">{exp.company}</div>
-                  <p className="text-slate-600 leading-relaxed text-sm">{exp.description}</p>
+                  <h3 className={cn("text-3xl font-medium mb-2", !isMono && "font-serif tracking-tight")}>{exp.role}</h3>
+                  <div className="text-lg text-emerald-600 font-medium mb-6 italic">{exp.company}</div>
+                  <p className="text-slate-500 leading-relaxed text-lg max-w-2xl">{exp.description}</p>
                 </div>
               </div>
             ))}
@@ -133,47 +175,83 @@ export default function PublicPortfolio() {
       {/* Education & Skills */}
       {((!data.hiddenSections?.includes('education') && data.education && data.education.length > 0) || 
         (!data.hiddenSections?.includes('skills') && data.skills && data.skills.length > 0)) && (
-        <section className="max-w-4xl mx-auto px-6 py-24 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-16">
-          {!data.hiddenSections?.includes('education') && data.education && data.education.length > 0 && (
-            <div>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8">Education</h2>
-              <div className="space-y-6">
-                {data.education.map((edu, index) => (
-                  <div key={edu.id || `edu-${index}`}>
-                    <div className="text-xs text-slate-400 mb-1">{edu.year}</div>
-                    <h3 className="font-semibold">{edu.degree}</h3>
-                    <p className="text-sm text-slate-500">{edu.institution}</p>
-                  </div>
-                ))}
+        <section className="bg-slate-900 text-white py-32 rounded-[3.5rem] mx-4 mb-4">
+          <div className="max-w-4xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-24">
+            {!data.hiddenSections?.includes('education') && data.education && data.education.length > 0 && (
+              <div>
+                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 mb-12">Education</h2>
+                <div className="space-y-12">
+                  {data.education.map((edu, index) => (
+                    <div key={edu.id || `edu-${index}`}>
+                      <div className="text-xs text-emerald-400 font-bold mb-3">{edu.year}</div>
+                      <h3 className={cn("text-2xl font-medium mb-2", !isMono && "font-serif")}>{edu.degree}</h3>
+                      <p className="text-slate-400">{edu.institution}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          
-          {!data.hiddenSections?.includes('skills') && data.skills && data.skills.length > 0 && (
-            <div>
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8">Core Skills</h2>
-              <div className="flex flex-wrap gap-2">
-                {data.skills.map((skill, index) => (
-                  <span key={`${skill}-${index}`} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full">
-                    {skill}
-                  </span>
-                ))}
+            )}
+            
+            {!data.hiddenSections?.includes('skills') && data.skills && data.skills.length > 0 && (
+              <div>
+                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 mb-12">Core Expertise</h2>
+                <div className="flex flex-wrap gap-3">
+                  {data.skills.map((skill, index) => (
+                    <span key={`${skill}-${index}`} className="px-5 py-2.5 bg-white/5 border border-white/10 text-white text-xs font-bold uppercase tracking-widest rounded-full hover:bg-white/10 transition-colors">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </section>
       )}
 
-      <footer className="max-w-4xl mx-auto px-6 py-24 border-t border-slate-100 text-center">
-        <h2 className={cn("text-3xl md:text-5xl font-medium mb-8", !isMono && "font-serif tracking-tight")}>
-          Let's work together.
+      <footer className="max-w-4xl mx-auto px-6 py-32 border-t border-slate-100 text-center">
+        <h2 className={cn("text-4xl md:text-6xl font-medium mb-12", !isMono && "font-serif tracking-tight")}>
+          Let's create something <br className="hidden md:block" /> meaningful together.
         </h2>
-        <a href={`mailto:${data.socialLinks?.email || ''}`} className={cn(
-          "inline-block px-8 py-4 rounded-full text-white font-semibold transform hover:scale-105 transition-transform",
-          data.accentColor === 'slate' ? 'bg-slate-900' : `bg-${data.accentColor}-500`
-        )}>
-          Get in touch
-        </a>
+        
+        <div className="flex flex-col items-center gap-8">
+          <a href={`mailto:${data.socialLinks?.email || ''}`} className={cn(
+            "inline-flex items-center gap-3 px-10 py-5 rounded-full text-white font-bold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all",
+            data.accentColor === 'slate' ? 'bg-slate-900' : `bg-${data.accentColor}-500`
+          )}>
+            <Mail className="w-5 h-5" />
+            Get in touch
+          </a>
+          
+          <div className="flex items-center gap-6 mt-4">
+            {data.socialLinks?.linkedin && (
+              <a 
+                href={data.socialLinks.linkedin} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-3 bg-slate-50 rounded-full text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all border border-slate-100"
+                title="LinkedIn"
+              >
+                <Linkedin className="w-5 h-5" />
+              </a>
+            )}
+            {data.socialLinks?.github && (
+              <a 
+                href={data.socialLinks.github} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-3 bg-slate-50 rounded-full text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all border border-slate-100"
+                title="GitHub"
+              >
+                <Github className="w-5 h-5" />
+              </a>
+            )}
+          </div>
+          
+          <div className="mt-16 pt-8 border-t border-slate-100 w-full flex flex-col md:flex-row justify-between items-center text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+            <span>&copy; {new Date().getFullYear()} {data.name}</span>
+            <span className="mt-2 md:mt-0">Built with GA-Labs</span>
+          </div>
+        </div>
       </footer>
     </div>
   );
