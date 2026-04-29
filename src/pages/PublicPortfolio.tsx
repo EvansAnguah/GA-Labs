@@ -93,8 +93,8 @@ export default function PublicPortfolio() {
         <section className="max-w-4xl mx-auto px-6 py-24 border-t border-slate-100">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-12">Selected Works</h2>
           <div className={cn("grid gap-12", data.template === 'minimalist' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2')}>
-            {data.projects?.map(p => (
-               <a href={p.link || '#'} key={p.id} className="group block">
+            {data.projects?.map((p, index) => (
+               <a href={p.link || '#'} key={p.id || `project-${index}`} className="group block">
                   <div className={cn("aspect-[4/3] md:aspect-[4/5] rounded-xl mb-6 overflow-hidden relative", p.imageBg || 'bg-slate-100')}>
                      {/* We would use real images, but sticking to placeholders for now */}
                      <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -116,8 +116,8 @@ export default function PublicPortfolio() {
         <section className="max-w-4xl mx-auto px-6 py-24 border-t border-slate-100">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-16">Experience</h2>
           <div className="space-y-12">
-            {data.experience.map(exp => (
-              <div key={exp.id} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {data.experience.map((exp, index) => (
+              <div key={exp.id || `exp-${index}`} className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="text-sm text-slate-500 font-medium pt-1">{exp.startDate} — {exp.endDate || 'Present'}</div>
                 <div className="md:col-span-3">
                   <h3 className="text-xl font-semibold mb-1">{exp.role}</h3>
@@ -138,8 +138,8 @@ export default function PublicPortfolio() {
             <div>
               <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8">Education</h2>
               <div className="space-y-6">
-                {data.education.map(edu => (
-                  <div key={edu.id}>
+                {data.education.map((edu, index) => (
+                  <div key={edu.id || `edu-${index}`}>
                     <div className="text-xs text-slate-400 mb-1">{edu.year}</div>
                     <h3 className="font-semibold">{edu.degree}</h3>
                     <p className="text-sm text-slate-500">{edu.institution}</p>

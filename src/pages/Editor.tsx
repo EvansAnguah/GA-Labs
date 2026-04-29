@@ -492,7 +492,7 @@ export default function Editor() {
     <div className="flex h-screen w-full bg-[#F1F5F9] font-sans overflow-hidden text-slate-900">
       {/* Platform Navigation (Left Rail) */}
       <aside className="w-16 flex flex-col items-center py-6 bg-[#0F172A] text-white border-r border-slate-800 shrink-0">
-        <div className="mb-10 text-xl font-serif font-bold italic tracking-tighter text-emerald-400">GA</div>
+        <img src="https://images.pexels.com/photos/37324423/pexels-photo-37324423.png" alt="Logo" className="w-8 h-8 mb-10 object-contain" referrerPolicy="no-referrer" />
         <div className="flex-1 flex flex-col gap-6">
           <button 
             onClick={() => setSidebarTab('dashboard')}
@@ -642,8 +642,8 @@ export default function Editor() {
                         "grid gap-6 sm:gap-8",
                         localData.template === 'minimalist' ? 'grid-cols-1' : (deviceMode === 'mobile' ? 'grid-cols-1' : 'grid-cols-2')
                       )}>
-                        {localData.projects?.map((p: any) => (
-                          <div key={p.id} className="group cursor-pointer">
+                        {localData.projects?.map((p: any, index: number) => (
+                          <div key={p.id || `project-${index}`} className="group cursor-pointer">
                             <div className={cn("aspect-[4/5] rounded-xl mb-4 overflow-hidden relative", p.imageBg || 'bg-slate-100')}>
                               {/* Placeholder for project image */}
                               <div className="absolute inset-0 bg-slate-900/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -672,8 +672,8 @@ export default function Editor() {
                     <div className="mb-12 border-t border-slate-100 pt-16 sm:pt-24">
                       <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8">Experience</h4>
                       <div className="space-y-8">
-                        {localData.experience.map((exp: any) => (
-                          <div key={exp.id} className="flex flex-col gap-1">
+                        {localData.experience.map((exp: any, index: number) => (
+                          <div key={exp.id || `exp-${index}`} className="flex flex-col gap-1">
                             <h3 className="font-semibold text-sm text-slate-900">{exp.role} <span className="text-slate-400 font-normal ml-1">at {exp.company}</span></h3>
                             <p className="text-xs text-emerald-600 mb-2">{exp.startDate} – {exp.endDate}</p>
                             <p className="text-sm text-slate-500 leading-relaxed max-w-lg">{exp.description}</p>
@@ -688,8 +688,8 @@ export default function Editor() {
                        <div>
                          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">Education</h4>
                          <div className="space-y-6">
-                           {localData.education.map((edu: any) => (
-                             <div key={edu.id}>
+                           {localData.education.map((edu: any, index: number) => (
+                             <div key={edu.id || `edu-${index}`}>
                                <h3 className="font-semibold text-sm text-slate-900">{edu.degree}</h3>
                                <p className="text-xs text-slate-500 mt-1">{edu.institution} <span className="text-slate-300 mx-2">&bull;</span> {edu.year}</p>
                              </div>

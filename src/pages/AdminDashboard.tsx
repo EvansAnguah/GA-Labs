@@ -13,13 +13,16 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (profile?.role !== 'admin') {
+      const isSuperAdmin = user?.email === 'evansobeng022@gmail.com';
+      if (profile?.role !== 'admin' && !isSuperAdmin) {
         setLoading(false);
         return;
       }
       try {
-        const usersSnap = await getDocs(collection(db, 'users'));
-        const portfoliosSnap = await getDocs(collection(db, 'portfolios'));
+        const [usersSnap, portfoliosSnap] = await Promise.all([
+           getDocs(collection(db, 'users')),
+           getDocs(collection(db, 'portfolios'))
+        ]);
         
         setUsers(usersSnap.docs.map(d => ({ id: d.id, ...d.data() })));
         setPortfolios(portfoliosSnap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -30,14 +33,16 @@ export default function AdminDashboard() {
       }
     };
     
-    if (!authLoading) {
+    if (!authLoading && user) {
        fetchData();
     }
-  }, [profile, authLoading]);
+  }, [profile, authLoading, user]);
 
   if (authLoading) return <div className="p-8">Loading administration dashboard...</div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (profile?.role !== 'admin') {
+  
+  const isSuperAdmin = user?.email === 'evansobeng022@gmail.com';
+  if (profile?.role !== 'admin' && !isSuperAdmin) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50">
         <div className="text-center">
@@ -54,7 +59,10 @@ export default function AdminDashboard() {
   return (
     <div className="flex h-screen bg-slate-50 font-sans">
       <aside className="w-64 bg-[#0F172A] text-slate-300 p-6 flex flex-col">
-        <div className="text-2xl font-serif font-bold italic tracking-tighter text-emerald-400 mb-12">GA Admin</div>
+        <div className="flex items-center gap-3 mb-12">
+          <img src="https://images.pexels.com/photos/37324423/pexels-photo-37324423.png" alt="Logo" className="w-8 h-8 object-contain" referrerPolicy="no-referrer" />
+          <div className="text-xl font-serif font-bold italic tracking-tighter text-emerald-400">GA Admin</div>
+        </div>
         <nav className="space-y-2 flex-1">
           <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-500/10 text-emerald-400 font-medium">
             <LayoutDashboard className="w-5 h-5" /> Overview
