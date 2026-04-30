@@ -5,11 +5,21 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 export type Template = 'editorial' | 'minimalist';
 export type FontPairing = 'serif-sans' | 'mono' | 'outfit' | 'jakarta' | 'space' | 'cormorant' | 'plus-jakarta';
 export type AccentColor = 'emerald' | 'indigo' | 'rose' | 'slate' | 'amber' | 'violet';
+export type HoverEffect = 'underline' | 'background' | 'scale' | 'glow' | 'strikethrough';
 
 export interface NavLink {
   id: string;
   label: string;
   url: string;
+  sectionType?: 'projects' | 'experience' | 'education' | 'skills' | 'about' | 'contact' | 'custom';
+}
+
+export interface HeroConfig {
+  backgroundImage?: string;
+  overlayOpacity?: number;
+  textColor?: 'white' | 'dark' | 'auto';
+  alignment?: 'left' | 'center' | 'right';
+  padding?: 'small' | 'medium' | 'large';
 }
 
 export interface Project {
@@ -51,6 +61,8 @@ export interface PortfolioData {
   isPublished: boolean;
   seoAutoIndex: boolean;
   navLinks?: NavLink[];
+  hoverEffect?: HoverEffect;
+  heroConfig?: HeroConfig;
   projects: Project[];
   skills?: string[];
   experience?: Experience[];
@@ -85,10 +97,17 @@ const defaultPortfolio: Omit<PortfolioData, 'ownerId'> = {
   isPublished: false,
   seoAutoIndex: false,
   navLinks: [
-    { id: '1', label: 'Work', url: '#projects' },
-    { id: '2', label: 'About', url: '#about' },
-    { id: '3', label: 'Contact', url: '#contact' }
+    { id: '1', label: 'Work', url: '#projects', sectionType: 'projects' },
+    { id: '2', label: 'About', url: '#about', sectionType: 'about' },
+    { id: '3', label: 'Contact', url: '#contact', sectionType: 'contact' }
   ],
+  hoverEffect: 'underline',
+  heroConfig: {
+    alignment: 'left',
+    overlayOpacity: 0,
+    textColor: 'auto',
+    padding: 'medium'
+  },
   projects: [],
   updatedAt: Date.now()
 };
