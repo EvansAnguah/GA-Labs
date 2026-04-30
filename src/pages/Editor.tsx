@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Layers, Monitor, Phone, Settings, Sparkles, Download, Circle, LayoutDashboard, Database, LogOut, Loader2, Link2, Plus, Trash2 } from 'lucide-react';
+import { Layers, Monitor, Phone, Settings, Sparkles, Download, Circle, LayoutDashboard, Database, LogOut, Loader2, Link2, Plus, Trash2, Menu, X } from 'lucide-react';
 import { usePortfolioStore } from '../store/usePortfolioStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { logout } from '../lib/firebase';
@@ -9,6 +9,8 @@ export default function Editor() {
   const { user, profile } = useAuthStore();
   const { data, loading, fetchPortfolio, updateData, deviceMode, setDeviceMode, sidebarTab, setSidebarTab } = usePortfolioStore();
   const [saveStatus, setSaveStatus] = useState<'synced' | 'saving'>('synced');
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isMobileEditorOpen, setIsMobileEditorOpen] = useState(false);
   
   // Local state for debounced editing
   const [localData, setLocalData] = useState<any>(null);
@@ -123,9 +125,11 @@ export default function Editor() {
         <div className="p-6 overflow-y-auto max-h-full space-y-8">
           <div>
             <div className="text-[10px] uppercase tracking-[0.1em] font-bold text-slate-400 mb-6 flex items-center gap-2">
-              <Plus className="w-3.5 h-3.5" /> Site Navigation
+              <Link2 className="w-3.5 h-3.5" /> Site Navigation
             </div>
-            <p className="text-xs text-slate-500 mb-6">Manage your menu links and create new pages for your portfolio.</p>
+            <p className="text-xs text-slate-500 mb-6 font-medium leading-relaxed">
+              Each link represents a section on your portfolio. Add, remove, or reorder your menu.
+            </p>
           </div>
 
           <div className="space-y-4">
@@ -141,9 +145,9 @@ export default function Editor() {
                 >
                   <Trash2 className="w-3 h-3" />
                 </button>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Menu Label</label>
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block mb-1.5 px-1">Label</label>
                     <input 
                       type="text" 
                       value={link.label}
@@ -152,14 +156,48 @@ export default function Editor() {
                         newLinks[idx] = { ...newLinks[idx], label: e.target.value };
                         handleChange('navLinks', newLinks);
                       }}
-                      placeholder="e.g. Work, About, Blog"
-                      className="w-full text-sm font-medium text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100 focus:border-emerald-500 focus:bg-white outline-none transition-all"
+                      placeholder="e.g. Work, About"
+                      className="w-full text-sm font-semibold text-slate-700 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 focus:border-emerald-500 focus:bg-white outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Destination URL</label>
-                    <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-100 focus-within:bg-white focus-within:border-emerald-500 transition-all">
-                      <Link2 className="w-3.5 h-3.5 text-slate-300" />
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block mb-1.5 px-1">Linked Section</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { val: 'projects', label: 'Projects' },
+                        { val: 'experience', label: 'Work History' },
+                        { val: 'education', label: 'Education' },
+                        { val: 'skills', label: 'Expertise' },
+                        { val: 'about', label: 'Biography' },
+                        { val: 'contact', label: 'Contact' },
+                        { val: 'custom', label: 'External URL' }
+                      ].map(type => (
+                        <button 
+                          key={type.val}
+                          onClick={() => {
+                            const newLinks = [...(localData.navLinks || [])];
+                            newLinks[idx] = { 
+                              ...newLinks[idx], 
+                              sectionType: type.val,
+                              url: type.val === 'custom' ? link.url : `#${type.val}`
+                            };
+                            handleChange('navLinks', newLinks);
+                          }}
+                          className={cn(
+                            "py-2 px-3 rounded-lg border text-[10px] font-bold text-center transition-all",
+                            link.sectionType === type.val 
+                              ? "bg-slate-900 text-white border-slate-900 shadow-sm" 
+                              : "bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100"
+                          )}
+                        >
+                          {type.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {link.sectionType === 'custom' && (
+                    <div>
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block mb-1.5 px-1">URL</label>
                       <input 
                         type="text" 
                         value={link.url}
@@ -168,11 +206,11 @@ export default function Editor() {
                           newLinks[idx] = { ...newLinks[idx], url: e.target.value };
                           handleChange('navLinks', newLinks);
                         }}
-                        placeholder="e.g. #projects or https://..."
-                        className="w-full text-xs font-mono text-slate-500 bg-transparent outline-none"
+                        placeholder="https://..."
+                        className="w-full text-xs font-mono text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 outline-none"
                       />
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -180,22 +218,12 @@ export default function Editor() {
             <button 
               onClick={() => {
                 const newId = Date.now().toString();
-                handleChange('navLinks', [...(localData.navLinks || []), { id: newId, label: 'New Link', url: '#' }]);
+                handleChange('navLinks', [...(localData.navLinks || []), { id: newId, label: 'Section', url: '#projects', sectionType: 'projects' }]);
               }}
               className="w-full py-4 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-xs font-bold uppercase hover:border-emerald-300 hover:text-emerald-500 hover:bg-emerald-50/30 transition-all flex items-center justify-center gap-2"
             >
-              <Plus className="w-4 h-4" /> Add Menu Item
+              <Plus className="w-4 h-4" /> Add Section Link
             </button>
-          </div>
-          
-          <div className="pt-8 border-t border-slate-100">
-            <h3 className="text-xs font-bold text-slate-800 mb-4 uppercase tracking-widest">Page Tip</h3>
-            <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 flex gap-3">
-              <Sparkles className="w-5 h-5 text-amber-500 shrink-0" />
-              <p className="text-[11px] text-amber-800 leading-relaxed">
-                You can link to external pages or use anchor tags (like <code className="bg-amber-100 px-1 rounded">#projects</code>) to link to specific sections on your portfolio.
-              </p>
-            </div>
           </div>
         </div>
       );
@@ -482,15 +510,91 @@ export default function Editor() {
     
     if (sidebarTab === 'layers') {
       return (
-        <div className="p-5">
-          <div className="flex items-center gap-2 mb-5">
+        <div className="p-5 overflow-y-auto max-h-full space-y-8">
+          <div className="flex items-center gap-2 mb-2">
             <Settings className="w-3 h-3 text-slate-400" />
             <div className="text-[10px] uppercase tracking-[0.1em] font-bold text-slate-400">Customization Controls</div>
           </div>
           
           <div className="space-y-6">
             <div>
-              <label className="text-[11px] font-semibold text-slate-700 block mb-2.5">Template Selection</label>
+               <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer" onClick={() => handleChange('theme', localData.theme === 'dark' ? 'light' : 'dark')}>
+                  <span className="text-xs font-bold text-slate-700">Dark Mode</span>
+                  <button 
+                    className={cn(
+                      "w-8 h-4 rounded-full relative transition-colors duration-300 pointer-events-none",
+                      localData.theme === 'dark' ? "bg-slate-900" : "bg-slate-200"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-3 h-3 bg-white rounded-full absolute top-[1.5px] shadow-sm transition-transform duration-300",
+                      localData.theme === 'dark' ? "translate-x-4" : "translate-x-0.5"
+                    )} />
+                  </button>
+               </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100">
+              <label className="text-[11px] font-semibold text-slate-700 block mb-2.5">Hero Background</label>
+              <div className="space-y-3">
+                <input 
+                  type="text" 
+                  placeholder="Hero Background Image URL"
+                  value={localData.heroConfig?.backgroundImage || ''}
+                  onChange={(e) => handleChange('heroConfig', { ...localData.heroConfig, backgroundImage: e.target.value })}
+                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-white"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[9px] font-bold uppercase text-slate-400 block mb-1">Text Color</label>
+                    <select 
+                      value={localData.heroConfig?.textColor || 'auto'}
+                      onChange={(e) => handleChange('heroConfig', { ...localData.heroConfig, textColor: e.target.value })}
+                      className="w-full text-[10px] p-2 bg-white border border-slate-200 rounded-lg outline-none"
+                    >
+                      <option value="auto">Auto</option>
+                      <option value="white">White</option>
+                      <option value="dark">Dark</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-bold uppercase text-slate-400 block mb-1">Alignment</label>
+                    <select 
+                      value={localData.heroConfig?.alignment || 'left'}
+                      onChange={(e) => handleChange('heroConfig', { ...localData.heroConfig, alignment: e.target.value })}
+                      className="w-full text-[10px] p-2 bg-white border border-slate-200 rounded-lg outline-none"
+                    >
+                      <option value="left">Left</option>
+                      <option value="center">Center</option>
+                      <option value="right">Right</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100">
+              <label className="text-[11px] font-semibold text-slate-700 block mb-2.5">Navigation Hover Effect</label>
+              <div className="grid grid-cols-2 gap-2">
+                {(['underline', 'background', 'scale', 'glow', 'strikethrough'] as const).map(effect => (
+                  <button 
+                    key={effect}
+                    onClick={() => handleChange('hoverEffect', effect)}
+                    className={cn(
+                      "py-2.5 px-3 rounded-lg border text-[10px] font-bold text-center transition-all",
+                      localData.hoverEffect === effect 
+                        ? "bg-slate-900 text-white border-slate-900 shadow-md" 
+                        : "bg-white border-slate-100 text-slate-500 hover:border-slate-300"
+                    )}
+                  >
+                    {effect}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100">
+              <label className="text-[11px] font-semibold text-slate-700 block mb-2.5">Template</label>
               <div className="grid grid-cols-2 gap-2.5">
                 {(['editorial', 'minimalist'] as const).map(t => (
                   <button
@@ -633,31 +737,58 @@ export default function Editor() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-[#F1F5F9] font-sans overflow-hidden text-slate-900">
+    <div className="flex h-screen w-full bg-[#F1F5F9] font-sans overflow-hidden text-slate-900 relative">
       {/* Platform Navigation (Left Rail) */}
-      <aside className="w-16 flex flex-col items-center py-6 bg-[#0F172A] text-white border-r border-slate-800 shrink-0">
+      <aside className={cn(
+        "w-16 flex flex-col items-center py-6 bg-[#0F172A] text-white border-r border-slate-800 shrink-0 transition-transform duration-300 z-[60] absolute h-full md:relative md:translate-x-0",
+        isMobileNavOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
         <img src="https://images.pexels.com/photos/37324423/pexels-photo-37324423.png" alt="Logo" className="w-8 h-8 mb-10 object-contain" referrerPolicy="no-referrer" />
         <div className="flex-1 flex flex-col gap-6">
           <button 
-            onClick={() => setSidebarTab('dashboard')}
+            onClick={() => { 
+              setSidebarTab('dashboard'); 
+              if (window.innerWidth < 768) {
+                setIsMobileNavOpen(false);
+                setIsMobileEditorOpen(true);
+              }
+            }}
             className={cn("p-2 rounded-lg transition-colors", sidebarTab === 'dashboard' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
           >
             <LayoutDashboard className="w-5 h-5" />
           </button>
           <button 
-            onClick={() => setSidebarTab('navigation')}
+            onClick={() => { 
+              setSidebarTab('navigation'); 
+              if (window.innerWidth < 768) {
+                setIsMobileNavOpen(false);
+                setIsMobileEditorOpen(true);
+              }
+            }}
             className={cn("p-2 rounded-lg transition-colors", sidebarTab === 'navigation' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
           >
             <Link2 className="w-5 h-5" />
           </button>
           <button 
-            onClick={() => setSidebarTab('search')}
+            onClick={() => { 
+              setSidebarTab('search'); 
+              if (window.innerWidth < 768) {
+                setIsMobileNavOpen(false);
+                setIsMobileEditorOpen(true);
+              }
+            }}
             className={cn("p-2 rounded-lg transition-colors", sidebarTab === 'search' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
           >
             <Database className="w-5 h-5" />
           </button>
           <button 
-            onClick={() => setSidebarTab('layers')}
+            onClick={() => { 
+              setSidebarTab('layers'); 
+              if (window.innerWidth < 768) {
+                setIsMobileNavOpen(false);
+                setIsMobileEditorOpen(true);
+              }
+            }}
             className={cn("p-2 rounded-lg transition-colors", sidebarTab === 'layers' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
           >
             <Layers className="w-5 h-5" />
@@ -678,22 +809,42 @@ export default function Editor() {
         </div>
       </aside>
 
+      {/* Mobile Sidebar Overlays */}
+      {isMobileNavOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-[55] md:hidden backdrop-blur-sm"
+          onClick={() => setIsMobileNavOpen(false)}
+        />
+      )}
+      {isMobileEditorOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 z-[45] md:hidden backdrop-blur-sm"
+          onClick={() => setIsMobileEditorOpen(false)}
+        />
+      )}
+
       {/* Editor Main Workspace */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-4">
-            <h1 className="text-sm font-semibold text-slate-900 truncate">
+        <header className="h-16 bg-white border-b border-slate-200 px-4 md:px-6 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3 md:gap-4">
+            <button 
+              onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+              className="md:hidden p-2 text-slate-500 hover:text-slate-900 transition-colors"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <h1 className="text-xs md:text-sm font-semibold text-slate-900 truncate max-w-[120px] md:max-w-none">
               {localData.name || 'Untitled'}'s Portfolio
             </h1>
             {localData.isPublished && (
-              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-wider hidden sm:flex items-center gap-1.5">
+              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-wider hidden lg:flex items-center gap-1.5">
                 <Link2 className="w-3 h-3" /> Live
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex bg-slate-100 p-1 rounded-md mr-1 sm:mr-4">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex bg-slate-100 p-1 rounded-md hidden sm:flex">
               <button
                 onClick={() => setDeviceMode('desktop')}
                 className={cn(
@@ -749,7 +900,8 @@ export default function Editor() {
 
             {/* User Site Preview Content */}
             <div className={cn(
-              "flex-1 overflow-y-auto bg-white custom-scrollbar",
+              "flex-1 overflow-y-auto custom-scrollbar transition-colors duration-500",
+              localData.theme === 'dark' ? "bg-slate-950 text-white" : "bg-white text-slate-900",
               localData.font === 'mono' ? 'font-mono' : '',
               localData.font === 'outfit' ? 'font-[Outfit]' : '',
               localData.font === 'jakarta' ? 'font-[Plus_Jakarta_Sans]' : '',
@@ -757,135 +909,172 @@ export default function Editor() {
               localData.font === 'cormorant' ? 'font-[Cormorant_Garamond]' : '',
               localData.font === 'serif-sans' ? 'font-sans' : ''
             )}>
-              <div className="p-8 sm:p-12 min-h-full">
-                <nav className="flex justify-between items-center mb-16 sm:mb-24">
+              <div className="min-h-full">
+                <nav className={cn(
+                  "flex justify-between items-center px-8 sm:px-12 pt-8 sm:pt-12 pb-0",
+                  deviceMode === 'mobile' ? 'flex-col gap-4' : ''
+                )}>
                   <div className={cn(
                     "text-lg font-bold uppercase tracking-widest truncate max-w-[200px]",
                     localData.font === 'serif-sans' || localData.font === 'cormorant' ? 'font-serif' : ''
                   )}>
                     {localData.name || 'Your Name'}
                   </div>
-                  {deviceMode === 'desktop' && (
-                    <div className="flex gap-8 text-[11px] font-bold text-slate-400 uppercase tracking-widest shrink-0">
+                  {deviceMode === 'desktop' ? (
+                    <div className="flex gap-6 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest shrink-0">
                       {(localData.navLinks || []).map((link: any) => (
                         <span key={link.id} className={cn(
-                          "transition-colors relative group pb-1 cursor-default",
+                          "transition-all duration-300 relative group pb-1 cursor-default",
+                          localData.hoverEffect === 'scale' && "hover:scale-110",
+                          localData.hoverEffect === 'strikethrough' && "hover:line-through shadow-indigo-200",
                           localData.accentColor === 'emerald' && "hover:text-emerald-500",
                           localData.accentColor === 'indigo' && "hover:text-indigo-500",
                           localData.accentColor === 'rose' && "hover:text-rose-600",
                           localData.accentColor === 'amber' && "hover:text-amber-500",
                           localData.accentColor === 'violet' && "hover:text-violet-500",
-                          localData.accentColor === 'slate' && "hover:text-slate-900"
+                          localData.accentColor === 'slate' && (localData.theme === 'dark' ? "hover:text-white" : "hover:text-slate-900")
                         )}>
                           {link.label}
-                          <span className={cn(
-                            "absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full",
-                            localData.accentColor === 'emerald' && "bg-emerald-500",
-                            localData.accentColor === 'indigo' && "bg-indigo-500",
-                            localData.accentColor === 'rose' && "bg-rose-500",
-                            localData.accentColor === 'amber' && "bg-amber-500",
-                            localData.accentColor === 'violet' && "bg-violet-500",
-                            localData.accentColor === 'slate' && "bg-slate-900"
-                          )} />
+                          {localData.hoverEffect === 'underline' && (
+                            <span className={cn(
+                              "absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full",
+                              localData.accentColor === 'emerald' && "bg-emerald-500",
+                              localData.accentColor === 'indigo' && "bg-indigo-500",
+                              localData.accentColor === 'rose' && "bg-rose-500",
+                              localData.accentColor === 'amber' && "bg-amber-500",
+                              localData.accentColor === 'violet' && "bg-violet-500",
+                              localData.accentColor === 'slate' && (localData.theme === 'dark' ? "bg-white" : "bg-slate-900")
+                            )} />
+                          )}
                         </span>
                       ))}
                     </div>
-                  )}
-                  {deviceMode === 'mobile' && (
-                    <button className="p-2"><Layers className="w-5 h-5 text-slate-800" /></button>
+                  ) : (
+                    <div className="md:hidden">
+                       <Menu className="w-5 h-5 text-slate-400" />
+                    </div>
                   )}
                 </nav>
-                
-                <div className={cn("max-w-xl", deviceMode === 'mobile' ? 'text-center mx-auto' : '')}>
-                  <h2 className={cn(
-                    "text-4xl sm:text-5xl font-medium leading-[1.1] text-slate-900 mb-6",
-                    localData.font === 'mono' ? '' : 'font-serif tracking-tight'
+
+                {/* Hero Section Preview */}
+                <header 
+                  className={cn(
+                    "relative overflow-hidden transition-all duration-700",
+                    (localData.heroConfig?.padding === 'small' ? 'py-8 md:py-12' : localData.heroConfig?.padding === 'large' ? 'py-20 md:py-32' : 'py-12 md:py-20'),
+                    localData.heroConfig?.backgroundImage ? 'min-h-[400px] flex items-center px-8 md:px-12' : 'px-8 md:px-12'
+                  )}
+                >
+                  {localData.heroConfig?.backgroundImage && (
+                    <>
+                      <div className="absolute inset-0 z-0">
+                         <img src={localData.heroConfig.backgroundImage} alt="Hero" className="w-full h-full object-cover" />
+                         <div 
+                           className="absolute inset-0 bg-black transition-opacity" 
+                           style={{ opacity: (localData.heroConfig.overlayOpacity || 0) / 100 }} 
+                         />
+                      </div>
+                    </>
+                  )}
+                  <div className={cn(
+                    "relative z-10 w-full",
+                    localData.heroConfig?.alignment === 'center' ? 'text-center' : localData.heroConfig?.alignment === 'right' ? 'text-right' : 'text-left',
+                    localData.heroConfig?.textColor === 'white' ? 'text-white' : localData.heroConfig?.textColor === 'dark' ? 'text-slate-900' : ''
                   )}>
-                    {localData.bio || 'Enter your bio here...'}
-                  </h2>
-                  <p className="text-slate-500 text-sm leading-relaxed mb-8 sm:mb-12 italic">
-                    {localData.role || 'Your professional role'}
-                  </p>
-                  
-                  {!localData.hiddenSections?.includes('projects') && (
-                    <div className="mb-12 mt-16 sm:mt-24 border-t border-slate-100 pt-16 sm:pt-24">
-                      <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8">Selected Works</h4>
-                      <div className={cn(
-                        "grid gap-6 sm:gap-8",
-                        localData.template === 'minimalist' ? 'grid-cols-1' : (deviceMode === 'mobile' ? 'grid-cols-1' : 'grid-cols-2')
-                      )}>
-                        {localData.projects?.map((p: any, index: number) => (
-                          <div key={p.id || `project-${index}`} className="group cursor-pointer">
-                            <div className={cn("aspect-[4/5] rounded-xl mb-4 overflow-hidden relative shadow-sm", p.imageBg || 'bg-slate-100')}>
-                              {p.imageUrl ? (
-                                <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                              ) : (
-                                <div className="absolute inset-0 bg-slate-900/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                  <span className="bg-white/90 text-slate-900 text-xs font-semibold px-4 py-2 rounded-full shadow-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                                    View Project
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            <h3 className={cn("font-medium text-slate-900 text-sm mb-1 line-clamp-1", localData.font === 'mono' ? '' : 'font-serif')}>
-                              {p.title || 'Untitled Project'}
-                            </h3>
-                            <p className="text-xs text-slate-500 line-clamp-2">{p.description || 'Project description goes here.'}</p>
-                          </div>
-                        ))}
-                        {(!localData.projects || localData.projects.length === 0) && (
-                          <div className="col-span-full py-12 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 rounded-xl">
-                            <Database className="w-8 h-8 mb-2 opacity-50" />
-                            <p className="text-sm font-medium">No projects added</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {!localData.hiddenSections?.includes('experience') && localData.experience?.length > 0 && (
-                    <div className="mb-12 border-t border-slate-100 pt-16 sm:pt-24">
-                      <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8">Experience</h4>
-                      <div className="space-y-8">
-                        {localData.experience.map((exp: any, index: number) => (
-                          <div key={exp.id || `exp-${index}`} className="flex flex-col gap-1">
-                            <h3 className="font-semibold text-sm text-slate-900">{exp.role} <span className="text-slate-400 font-normal ml-1">at {exp.company}</span></h3>
-                            <p className="text-xs text-emerald-600 mb-2">{exp.startDate} – {exp.endDate}</p>
-                            <p className="text-sm text-slate-500 leading-relaxed max-w-lg">{exp.description}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 border-t border-slate-100 pt-16 sm:pt-24 pb-12">
-                     {!localData.hiddenSections?.includes('education') && localData.education?.length > 0 && (
-                       <div>
-                         <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">Education</h4>
-                         <div className="space-y-6">
-                           {localData.education.map((edu: any, index: number) => (
-                             <div key={edu.id || `edu-${index}`}>
-                               <h3 className="font-semibold text-sm text-slate-900">{edu.degree}</h3>
-                               <p className="text-xs text-slate-500 mt-1">{edu.institution} <span className="text-slate-300 mx-2">&bull;</span> {edu.year}</p>
-                             </div>
-                           ))}
-                         </div>
-                       </div>
-                     )}
-
-                     {!localData.hiddenSections?.includes('skills') && localData.skills?.length > 0 && (
-                       <div>
-                         <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">Core Skills</h4>
-                         <div className="flex flex-wrap gap-2">
-                           {localData.skills.map((skill: string, index: number) => (
-                             <span key={`${skill}-${index}`} className="bg-slate-50 text-slate-600 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-slate-200">
-                               {skill}
-                             </span>
-                           ))}
-                         </div>
-                       </div>
-                     )}
+                    <h2 className={cn(
+                      "text-3xl sm:text-4xl md:text-6xl font-medium leading-[1.1] mb-6",
+                      localData.font === 'serif-sans' || localData.font === 'cormorant' ? 'font-serif' : 'tracking-tight'
+                    )}>
+                      {localData.bio || 'Your bio message...'}
+                    </h2>
+                    <p className={cn(
+                      "text-base md:text-lg italic font-medium mb-8",
+                      localData.heroConfig?.textColor === 'white' ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'
+                    )}>
+                      {localData.role || 'Your professional role'}
+                    </p>
                   </div>
+                </header>
+
+                <div className={cn(
+                  "pb-24 space-y-16 md:space-y-24 mt-8 md:mt-12",
+                  deviceMode === 'mobile' ? 'px-6' : 'px-12'
+                )}>
+                  {(localData.navLinks || []).map((link: any) => {
+                    const type = link.sectionType;
+                    if (type === 'projects') {
+                      return (
+                        <div key={link.id} className="border-t border-slate-100 dark:border-slate-800 pt-16">
+                          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8">Selected Works</h4>
+                          <div className={cn(
+                            "grid gap-6 sm:gap-8",
+                            localData.template === 'minimalist' ? 'grid-cols-1' : (deviceMode === 'mobile' ? 'grid-cols-1' : 'grid-cols-2')
+                          )}>
+                            {localData.projects?.map((p: any, index: number) => (
+                              <div key={p.id || `project-${index}`} className="group cursor-pointer">
+                                <div className={cn("aspect-[4/5] rounded-xl mb-4 overflow-hidden relative shadow-sm border dark:border-slate-800", p.imageBg || 'bg-slate-100')}>
+                                  {p.imageUrl ? (
+                                    <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                  ) : (
+                                    <div className="absolute inset-0 bg-slate-900/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                      <span className="bg-white text-slate-900 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-sm">
+                                        View Project
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                <h3 className={cn("font-medium text-sm mb-1 line-clamp-1", localData.font === 'serif-sans' || localData.font === 'cormorant' ? 'font-serif' : '')}>
+                                  {p.title || 'Untitled Project'}
+                                </h3>
+                                <p className="text-xs text-slate-500 line-clamp-2">{p.description || 'Project description goes here.'}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                    if (type === 'experience') {
+                      return (
+                        <div key={link.id} className="border-t border-slate-100 dark:border-slate-800 pt-16">
+                          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8 text-center">Experience</h4>
+                          <div className="space-y-12">
+                            {localData.experience?.map((exp: any, index: number) => (
+                               <div key={exp.id || `exp-${index}`} className="flex flex-col sm:flex-row gap-4 sm:gap-12">
+                                  <div className="text-[10px] font-bold text-slate-300 uppercase tracking-widest w-32 shrink-0 pt-1">{exp.startDate} - {exp.endDate || 'Present'}</div>
+                                  <div>
+                                     <h5 className={cn("text-lg font-medium mb-1", localData.font === 'serif-sans' || localData.font === 'cormorant' ? 'font-serif' : '')}>{exp.role}</h5>
+                                     <p className="text-slate-500 text-sm mb-2">{exp.company}</p>
+                                     <p className="text-slate-400 text-xs leading-relaxed max-w-lg">{exp.description}</p>
+                                  </div>
+                               </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                    if (type === 'about') {
+                      return (
+                        <div key={link.id} className="border-t border-slate-100 dark:border-slate-800 pt-16">
+                           <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8">About</h4>
+                           <div className={cn("text-xl leading-relaxed max-w-2xl", localData.font === 'serif-sans' || localData.font === 'cormorant' ? 'font-serif' : '')}>
+                              {localData.bio}
+                           </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+
+                  {/* Skills Section (Always show if exists and not hidden) */}
+                  {!localData.hiddenSections?.includes('skills') && localData.skills?.length > 0 && (
+                    <div className="border-t border-slate-100 dark:border-slate-800 pt-16 text-center">
+                       <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8">Expertise</h4>
+                       <div className="flex flex-wrap justify-center gap-3">
+                          {localData.skills.map((skill: string, index: number) => (
+                             <span key={index} className="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-[10px] font-bold uppercase tracking-widest rounded-full">{skill}</span>
+                          ))}
+                       </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -895,8 +1084,17 @@ export default function Editor() {
       </main>
 
       {/* Editor Settings (Right Sidebar) */}
-      <aside className="w-72 bg-white border-l border-slate-200 flex flex-col shrink-0 overflow-hidden z-10 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)]">
+      <aside className={cn(
+        "w-72 md:w-80 lg:w-96 bg-white border-l border-slate-200 flex flex-col shrink-0 overflow-hidden z-[50] shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] transition-transform duration-300 absolute inset-y-0 right-0 md:relative md:translate-x-0 h-full",
+        isMobileEditorOpen ? "translate-x-0" : "translate-x-full"
+      )}>
         <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-100">
+             <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Settings</span>
+             <button onClick={() => setIsMobileEditorOpen(false)} className="p-1 hover:bg-slate-100 rounded-lg">
+                <X className="w-5 h-5 text-slate-400" />
+             </button>
+          </div>
           {renderRightPanel()}
         </div>
       </aside>

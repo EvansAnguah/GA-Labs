@@ -42,6 +42,8 @@ service cloud.firestore {
         && ( !('profileImage' in data) || (data.profileImage is string && data.profileImage.size() <= 5000) )
         && ( !('projects' in data) || (data.projects is list && data.projects.size() <= 100) )
         && ( !('navLinks' in data) || (data.navLinks is list && data.navLinks.size() <= 20) )
+        && ( !('hoverEffect' in data) || (data.hoverEffect is string && data.hoverEffect.size() <= 100) )
+        && ( !('heroConfig' in data) || (data.heroConfig is map && data.heroConfig.keys().size() <= 10) )
         && ( !('skills' in data) || (data.skills is list && data.skills.size() <= 200) )
         && ( !('experience' in data) || (data.experience is list && data.experience.size() <= 100) )
         && ( !('education' in data) || (data.education is list && data.education.size() <= 100) )
@@ -91,7 +93,7 @@ service cloud.firestore {
       allow update: if isSignedIn()
         && (request.auth.uid == userId || isAdmin())
         && isValidPortfolio(incoming(), userId)
-        && incoming().diff(existing()).affectedKeys().hasOnly(['ownerId', 'name', 'role', 'bio', 'profileImage', 'theme', 'template', 'font', 'accentColor', 'isPublished', 'seoAutoIndex', 'projects', 'navLinks', 'skills', 'experience', 'education', 'certifications', 'testimonials', 'socialLinks', 'sectionOrder', 'hiddenSections', 'updatedAt'])
+        && incoming().diff(existing()).affectedKeys().hasOnly(['ownerId', 'name', 'role', 'bio', 'profileImage', 'theme', 'template', 'font', 'accentColor', 'isPublished', 'seoAutoIndex', 'projects', 'navLinks', 'hoverEffect', 'heroConfig', 'skills', 'experience', 'education', 'certifications', 'testimonials', 'socialLinks', 'sectionOrder', 'hiddenSections', 'updatedAt'])
         && incoming().ownerId == existing().ownerId;
     }
 
