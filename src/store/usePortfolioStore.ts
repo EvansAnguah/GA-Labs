@@ -29,6 +29,7 @@ export interface HeroConfig {
   secondaryCtaLink?: string;
   showScrollIndicator?: boolean;
   typingTexts?: string[];
+  heroStyle?: 'minimalist' | 'split' | 'immersive' | 'sidebar';
 }
 
 export interface DesignConfig {
@@ -44,6 +45,35 @@ export interface DesignConfig {
   letterSpacing: 'tighter' | 'normal' | 'wider';
   customAccentHex?: string;
   showNoise?: boolean;
+  textAlign?: 'left' | 'center' | 'right';
+  projectColumns?: '1' | '2' | '3';
+  shadowStyle?: 'none' | 'soft' | 'medium' | 'deep';
+  navLayout?: 'default' | 'floating' | 'glass' | 'sidebar';
+  // Animation & Interaction Features
+  pageEntrance?: 'fade' | 'slide' | 'zoom' | 'none';
+  entranceDirection?: 'up' | 'down' | 'left' | 'right';
+  entranceDuration?: number;
+  staggerEnabled?: boolean;
+  textReveal?: 'none' | 'chars' | 'words' | 'lines';
+  parallaxIntensity?: number;
+  hoverScale?: number;
+  magneticButtons?: boolean;
+  transitionSpeed?: number;
+  showScrollProgress?: boolean;
+  smoothScroll?: boolean;
+  cursorType?: 'default' | 'dot' | 'circle' | 'trail' | 'none';
+  cursorInvert?: boolean;
+  bgAnimation?: boolean;
+  scrollReveal?: boolean;
+  revealDistance?: number;
+  modalStyle?: 'fade' | 'scale' | 'slide';
+  hoverLift?: number;
+  scrollBlur?: boolean;
+  navBehavior?: 'fixed' | 'sticky' | 'hide';
+  mouseSkew?: boolean;
+  tiltEffect?: boolean;
+  noiseIntensity?: number;
+  themeTransition?: number;
 }
 
 export interface Project {
@@ -123,6 +153,7 @@ export interface PortfolioData {
   services?: Service[];
   awards?: Award[];
   socialLinks?: Record<string, string>;
+  contactHeadline?: string;
   sectionOrder?: string[];
   hiddenSections?: string[];
   updatedAt: number;
@@ -132,11 +163,16 @@ interface PortfolioStore {
   data: PortfolioData | null;
   loading: boolean;
   deviceMode: 'desktop' | 'mobile';
-  sidebarTab: 'design' | 'content' | 'navigation';
+  sidebarTab: 'design' | 'content' | 'navigation' | 'animation';
+  canvasDragMode: boolean;
+  selectedCanvasItems: string[];
   fetchPortfolio: (uid: string) => Promise<void>;
   updateData: (updates: Partial<PortfolioData>, uid: string) => Promise<void>;
   setDeviceMode: (mode: 'desktop' | 'mobile') => void;
-  setSidebarTab: (tab: 'design' | 'content' | 'navigation') => void;
+  setSidebarTab: (tab: 'design' | 'content' | 'navigation' | 'animation') => void;
+  setCanvasDragMode: (mode: boolean) => void;
+  toggleCanvasSelection: (id: string, multi?: boolean) => void;
+  clearCanvasSelection: () => void;
 }
 
 const defaultPortfolio: Omit<PortfolioData, 'ownerId'> = {
@@ -175,6 +211,7 @@ const defaultPortfolio: Omit<PortfolioData, 'ownerId'> = {
     letterSpacing: 'normal',
     showNoise: false
   },
+  contactHeadline: "Let's create something extraordinary together.",
   projects: [],
   updatedAt: Date.now()
 };
@@ -184,6 +221,8 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   loading: true,
   deviceMode: 'desktop',
   sidebarTab: 'design',
+  canvasDragMode: false,
+  selectedCanvasItems: [],
   fetchPortfolio: async (uid: string) => {
     set({ loading: true });
     try {
@@ -219,4 +258,14 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   },
   setDeviceMode: (mode) => set({ deviceMode: mode }),
   setSidebarTab: (tab) => set({ sidebarTab: tab }),
+  setCanvasDragMode: (mode) => set({ canvasDragMode: mode, selectedCanvasItems: [] }),
+  toggleCanvasSelection: (id, multi) => set((state) => {
+    if (!multi) return { selectedCanvasItems: [id] };
+    const items = [...state.selectedCanvasItems];
+    const index = items.indexOf(id);
+    if (index > -1) items.splice(index, 1);
+    else items.push(id);
+    return { selectedCanvasItems: items };
+  }),
+  clearCanvasSelection: () => set({ selectedCanvasItems: [] }),
 }));

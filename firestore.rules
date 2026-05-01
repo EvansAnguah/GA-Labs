@@ -55,6 +55,7 @@ service cloud.firestore {
         && ( !('services' in data) || (data.services is list && data.services.size() <= 100) )
         && ( !('awards' in data) || (data.awards is list && data.awards.size() <= 100) )
         && ( !('socialLinks' in data) || (data.socialLinks is map) )
+        && ( !('contactHeadline' in data) || (data.contactHeadline is string && data.contactHeadline.size() <= 1000) )
         && ( !('sectionOrder' in data) || (data.sectionOrder is list) )
         && ( !('hiddenSections' in data) || (data.hiddenSections is list) )
         && ( !('updatedAt' in data) || data.updatedAt is number );
@@ -98,7 +99,7 @@ service cloud.firestore {
       allow update: if isSignedIn()
         && (request.auth.uid == userId || isAdmin())
         && isValidPortfolio(incoming(), userId)
-        && incoming().diff(existing()).affectedKeys().hasOnly(['ownerId', 'name', 'role', 'bio', 'profileImage', 'theme', 'template', 'font', 'accentColor', 'isPublished', 'seoAutoIndex', 'seoMetaTitle', 'seoMetaDescription', 'projects', 'navLinks', 'hoverEffect', 'heroConfig', 'designConfig', 'skills', 'experience', 'education', 'certifications', 'testimonials', 'services', 'awards', 'socialLinks', 'sectionOrder', 'hiddenSections', 'updatedAt'])
+        && incoming().diff(existing()).affectedKeys().hasOnly(['ownerId', 'name', 'role', 'bio', 'profileImage', 'theme', 'template', 'font', 'accentColor', 'isPublished', 'seoAutoIndex', 'seoMetaTitle', 'seoMetaDescription', 'projects', 'navLinks', 'hoverEffect', 'heroConfig', 'designConfig', 'skills', 'experience', 'education', 'certifications', 'testimonials', 'services', 'awards', 'socialLinks', 'contactHeadline', 'sectionOrder', 'hiddenSections', 'updatedAt'])
         && incoming().ownerId == existing().ownerId;
     }
 

@@ -44,6 +44,9 @@
         "services": { "type": "array" },
         "awards": { "type": "array" },
         "socialLinks": { "type": "object" },
+        "contactHeadline": { "type": "string" },
+        "sectionOrder": { "type": "array" },
+        "certifications": { "type": "array" },
         "hiddenSections": { "type": "array" },
         "updatedAt": { "type": "number" }
       },
