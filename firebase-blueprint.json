@@ -23,25 +23,28 @@
         "name": { "type": "string" },
         "role": { "type": "string" },
         "bio": { "type": "string" },
+        "profileImage": { "type": "string" },
         "theme": { "type": "string", "enum": ["light", "dark"] },
         "template": { "type": "string" },
         "font": { "type": "string" },
         "accentColor": { "type": "string" },
         "isPublished": { "type": "boolean" },
         "seoAutoIndex": { "type": "boolean" },
-        "projects": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "title": { "type": "string" },
-              "description": { "type": "string" },
-              "imageBg": { "type": "string" },
-              "link": { "type": "string" }
-            }
-          }
-        },
+        "seoMetaTitle": { "type": "string" },
+        "seoMetaDescription": { "type": "string" },
+        "projects": { "type": "array" },
+        "navLinks": { "type": "array" },
+        "hoverEffect": { "type": "string" },
+        "heroConfig": { "type": "object" },
+        "designConfig": { "type": "object" },
+        "skills": { "type": "array" },
+        "experience": { "type": "array" },
+        "education": { "type": "array" },
+        "testimonials": { "type": "array" },
+        "services": { "type": "array" },
+        "awards": { "type": "array" },
+        "socialLinks": { "type": "object" },
+        "hiddenSections": { "type": "array" },
         "updatedAt": { "type": "number" }
       },
       "required": ["ownerId", "theme", "template"]
