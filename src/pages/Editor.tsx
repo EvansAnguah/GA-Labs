@@ -1,5 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Layers, Monitor, Phone, Settings, Sparkles, Download, Circle, LayoutDashboard, Database, LogOut, Loader2, Link2, Plus, Trash2, Menu, X } from 'lucide-react';
+import { 
+  Layers, Monitor, Phone, Settings, Sparkles, Download, Circle, 
+  LayoutDashboard, Database, LogOut, Loader2, Link2, Plus, Trash2, 
+  Menu, X, Wand2, Type, Palette, Smartphone, Globe, BarChart, 
+  User, Briefcase, Award, Star, Quote, ChevronRight, Square, 
+  Box, MousePointer2, Move, Clock
+} from 'lucide-react';
 import { usePortfolioStore } from '../store/usePortfolioStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { logout } from '../lib/firebase';
@@ -68,6 +74,17 @@ export default function Editor() {
     slate: 'bg-slate-900',
     amber: 'bg-amber-500',
     violet: 'bg-violet-500',
+    sky: 'bg-sky-500',
+    lime: 'bg-lime-500',
+    custom: 'bg-white'
+  };
+
+  const handleDesignChange = (key: string, value: any) => {
+    handleChange('designConfig', { ...(localData.designConfig || {}), [key]: value });
+  };
+
+  const handleHeroChange = (key: string, value: any) => {
+    handleChange('heroConfig', { ...(localData.heroConfig || {}), [key]: value });
   };
 
   const accentTextColorMap: Record<string, string> = {
@@ -88,651 +105,611 @@ export default function Editor() {
   }
 
   const renderRightPanel = () => {
-    if (sidebarTab === 'dashboard') {
+    const isDark = localData.theme === 'dark';
+
+    if (sidebarTab === 'design') {
       return (
-        <div className="p-6 overflow-y-auto max-h-full space-y-8">
-          <div>
-            <div className="text-[10px] uppercase tracking-[0.1em] font-bold text-slate-400 mb-6 flex items-center gap-2">
-              <LayoutDashboard className="w-3.5 h-3.5" /> Dashboard
-            </div>
-            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-4">
-              <h3 className="text-sm font-semibold text-slate-800 mb-1">Portfolio Views</h3>
-              <p className="text-3xl font-bold text-slate-900">1,204</p>
-              <p className="text-xs text-emerald-600 mt-2 font-medium">+12% this week</p>
-            </div>
+        <div className="p-6 space-y-10">
+          <div className="text-[10px] uppercase tracking-[0.1em] font-bold text-slate-400 flex items-center gap-2">
+            <Palette className="w-3.5 h-3.5" /> Design Settings
           </div>
 
-          <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-            <h3 className="text-sm font-semibold text-slate-800 mb-4 uppercase tracking-widest text-[10px] text-slate-400">Recent Activity</h3>
+          {/* Theme & Branding */}
+          <section className="space-y-6">
+            <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2">Branding</h3>
+            
             <div className="space-y-4">
-              <div className="flex items-center gap-3 text-xs">
-                <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
-                  <Database className="w-4 h-4" />
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-700">Dark Mode</span>
+                <button 
+                  onClick={() => handleChange('theme', localData.theme === 'dark' ? 'light' : 'dark')}
+                  className={cn("w-10 h-5 rounded-full relative transition-colors", localData.theme === 'dark' ? "bg-slate-900" : "bg-slate-200")}
+                >
+                  <div className={cn("w-3.5 h-3.5 bg-white rounded-full absolute top-[3px] transition-transform", localData.theme === 'dark' ? "translate-x-5.5" : "translate-x-1")} />
+                </button>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase mb-3 block">Accent Color</label>
+                <div className="grid grid-cols-5 gap-2">
+                  {Object.entries(accentColorMap).map(([name, bg]) => (
+                    <button 
+                      key={name}
+                      onClick={() => handleChange('accentColor', name)}
+                      className={cn(
+                        "w-8 h-8 rounded-lg border-2 transition-all flex items-center justify-center relative",
+                        bg,
+                        localData.accentColor === name ? "border-slate-400 scale-110 shadow-md" : "border-transparent"
+                      )}
+                      title={name}
+                    >
+                      {name === 'custom' && <Palette className="w-4 h-4 text-slate-400" />}
+                      {localData.accentColor === name && <Circle className="w-1.5 h-1.5 text-white absolute bg-white p-0 rounded-full" />}
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <p className="font-medium text-slate-700">Project "Nova" updated</p>
-                  <p className="text-slate-400">2 hours ago</p>
+                {localData.accentColor === 'custom' && (
+                  <div className="mt-3">
+                    <input 
+                      type="color"
+                      value={localData.designConfig?.customAccentHex || '#10b981'}
+                      onChange={(e) => handleDesignChange('customAccentHex', e.target.value)}
+                      className="w-full h-8 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Typography */}
+          <section className="space-y-6">
+            <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center gap-2">
+              <Type className="w-3 h-3" /> Typography
+            </h3>
+            
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { id: 'serif-sans', label: 'Editorial' },
+                { id: 'modern', label: 'Modern Sans' },
+                { id: 'mono', label: 'Technical' },
+                { id: 'outfit', label: 'Bold Geometric' },
+                { id: 'jakarta', label: 'Friendly' },
+                { id: 'space', label: 'Tech Grotesk' },
+                { id: 'cormorant', label: 'Elegant Serif' },
+                { id: 'mona', label: 'Classic' }
+              ].map(font => (
+                <button 
+                  key={font.id}
+                  onClick={() => handleChange('font', font.id)}
+                  className={cn(
+                    "p-3 rounded-xl border text-left transition-all",
+                    localData.font === font.id ? "bg-slate-900 text-white border-slate-900" : "bg-slate-50 border-slate-100 text-slate-600 hover:border-slate-200"
+                  )}
+                >
+                  <span className="text-[10px] font-bold block mb-1 opacity-60">{font.label}</span>
+                  <span className="text-xs font-semibold">Abc 123</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-4 pt-2">
+               <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Heading Size</label>
+                  <div className="flex bg-slate-50 p-1 rounded-lg gap-1">
+                    {(['sm', 'md', 'lg', 'xl'] as const).map(size => (
+                      <button 
+                        key={size}
+                        onClick={() => handleDesignChange('headingSize', size)}
+                        className={cn("flex-1 py-1 text-[10px] font-bold uppercase rounded-md transition-all", localData.designConfig?.headingSize === size ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+               </div>
+               <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Line Height</label>
+                  <div className="flex bg-slate-50 p-1 rounded-lg gap-1">
+                    {(['tight', 'normal', 'relaxed'] as const).map(lh => (
+                      <button 
+                        key={lh}
+                        onClick={() => handleDesignChange('lineHeight', lh)}
+                        className={cn("flex-1 py-1 text-[10px] font-bold uppercase rounded-md transition-all", localData.designConfig?.lineHeight === lh ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
+                      >
+                        {lh}
+                      </button>
+                    ))}
+                  </div>
+               </div>
+            </div>
+          </section>
+
+          {/* UI Elements */}
+          <section className="space-y-6">
+            <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2">UI Elements</h3>
+            
+            <div className="space-y-5">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase mb-3 block">Border Radius</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {(['none', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', 'full'] as const).map(r => (
+                    <button 
+                      key={r}
+                      onClick={() => handleDesignChange('borderRadius', r)}
+                      className={cn(
+                        "h-10 border flex items-center justify-center transition-all",
+                        localData.designConfig?.borderRadius === r ? "bg-slate-900 text-white border-slate-900" : "bg-white border-slate-100 text-slate-500",
+                        r === 'none' ? 'rounded-none' : r === 'sm' ? 'rounded-sm' : r === 'md' ? 'rounded-md' : r === 'lg' ? 'rounded-lg' : r === 'xl' ? 'rounded-xl' : r === '2xl' ? 'rounded-2xl' : r === '3xl' ? 'rounded-[14px]' : 'rounded-full'
+                      )}
+                    >
+                      <Square className={cn("w-4 h-4", r === 'full' ? 'rounded-full' : '')} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase mb-3 block">Button Style</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['solid', 'outline', 'ghost', 'soft', 'neo'] as const).map(style => (
+                    <button 
+                      key={style}
+                      onClick={() => handleDesignChange('buttonStyle', style)}
+                      className={cn(
+                        "py-2.5 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all",
+                        localData.designConfig?.buttonStyle === style ? "bg-slate-900 text-white border-slate-900 shadow-md" : "bg-white border-slate-100 text-slate-500"
+                      )}
+                    >
+                      {style}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase mb-3 block">Hover Interaction</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['underline', 'background', 'scale', 'glow', 'strikethrough', 'tilt', 'blur'] as const).map(effect => (
+                    <button 
+                      key={effect}
+                      onClick={() => handleChange('hoverEffect', effect)}
+                      className={cn(
+                        "py-2 rounded-lg border text-[9px] font-bold uppercase transition-all",
+                        localData.hoverEffect === effect ? "bg-indigo-50 border-indigo-200 text-indigo-600" : "bg-slate-50 border-slate-100 text-slate-400"
+                      )}
+                    >
+                      {effect}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
+          </section>
+
+          {/* Effects */}
+          <section className="space-y-6">
+            <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2">Experience & Effects</h3>
+            <div className="space-y-4">
+               <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer" onClick={() => handleDesignChange('showNoise', !localData.designConfig?.showNoise)}>
+                  <div className="flex items-center gap-2">
+                     <Sparkles className="w-4 h-4 text-amber-500" />
+                     <span className="text-xs font-bold text-slate-700">Film Grain Noise</span>
+                  </div>
+                  <div className={cn("w-8 h-4 rounded-full relative transition-colors", localData.designConfig?.showNoise ? "bg-emerald-500" : "bg-slate-300")}>
+                    <div className={cn("w-2.5 h-2.5 bg-white rounded-full absolute top-[3.5px] transition-transform", localData.designConfig?.showNoise ? "translate-x-4.5" : "translate-x-1.5")} />
+                  </div>
+               </div>
+
+               <div className="p-4 bg-white rounded-2xl border border-slate-100 space-y-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Mouse Cursor</label>
+                    <div className="flex gap-2">
+                       {(['default', 'dot', 'circle', 'none'] as const).map(c => (
+                         <button 
+                           key={c}
+                           onClick={() => handleDesignChange('mouseCursor', c)}
+                           className={cn("flex-1 py-2 text-[10px] font-bold border rounded-lg", localData.designConfig?.mouseCursor === c ? "bg-slate-900 text-white border-slate-900" : "text-slate-400 border-slate-50")}
+                         >
+                           {c}
+                         </button>
+                       ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Page Transitions</label>
+                    <div className="flex gap-2">
+                       {(['fade', 'slide', 'scale', 'none'] as const).map(t => (
+                         <button 
+                           key={t}
+                           onClick={() => handleDesignChange('pageTransition', t)}
+                           className={cn("flex-1 py-2 text-[10px] font-bold border rounded-lg", localData.designConfig?.pageTransition === t ? "bg-slate-900 text-white border-slate-900" : "text-slate-400 border-slate-50")}
+                         >
+                           {t}
+                         </button>
+                       ))}
+                    </div>
+                  </div>
+               </div>
+            </div>
+          </section>
+        </div>
+      );
+    }
+
+    if (sidebarTab === 'content') {
+      return (
+        <div className="p-6 space-y-10">
+          <div className="text-[10px] uppercase tracking-[0.1em] font-bold text-slate-400 flex items-center gap-2">
+            <Database className="w-3.5 h-3.5" /> Content Editor
           </div>
+
+          <section className="space-y-6">
+            <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2">Hero Section</h3>
+            <div className="space-y-4">
+               <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block px-1">Headline</label>
+                  <textarea 
+                    value={localData.bio} 
+                    onChange={(e) => handleChange('bio', e.target.value)}
+                    rows={2}
+                    className="w-full text-sm p-3 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none transition-all resize-none" 
+                  />
+               </div>
+               <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block px-1">Sub-headline / Role</label>
+                  <input 
+                    type="text" 
+                    value={localData.role} 
+                    onChange={(e) => handleChange('role', e.target.value)}
+                    className="w-full text-sm p-3 rounded-xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none transition-all" 
+                  />
+               </div>
+               <div className="grid grid-cols-2 gap-4">
+                  <div>
+                     <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block px-1">Primary CTA</label>
+                     <input 
+                        type="text" 
+                        placeholder="Label"
+                        value={localData.heroConfig?.ctaLabel || ''}
+                        onChange={(e) => handleHeroChange('ctaLabel', e.target.value)}
+                        className="w-full text-xs p-2 rounded-lg border border-slate-100 bg-slate-50 mb-1"
+                     />
+                     <input 
+                        type="text" 
+                        placeholder="URL"
+                        value={localData.heroConfig?.ctaLink || ''}
+                        onChange={(e) => handleHeroChange('ctaLink', e.target.value)}
+                        className="w-full text-[10px] p-2 rounded-lg border border-slate-100 bg-slate-50 font-mono"
+                     />
+                  </div>
+                  <div>
+                     <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block px-1">Secondary CTA</label>
+                     <input 
+                        type="text" 
+                        placeholder="Label"
+                        value={localData.heroConfig?.secondaryCtaLabel || ''}
+                        onChange={(e) => handleHeroChange('secondaryCtaLabel', e.target.value)}
+                        className="w-full text-xs p-2 rounded-lg border border-slate-100 bg-slate-50 mb-1"
+                     />
+                     <input 
+                        type="text" 
+                        placeholder="URL"
+                        value={localData.heroConfig?.secondaryCtaLink || ''}
+                        onChange={(e) => handleHeroChange('secondaryCtaLink', e.target.value)}
+                        className="w-full text-[10px] p-2 rounded-lg border border-slate-100 bg-slate-50 font-mono"
+                     />
+                  </div>
+               </div>
+               <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block px-1">Background Image URL</label>
+                  <input 
+                    type="text" 
+                    placeholder="https://..."
+                    value={localData.heroConfig?.backgroundImage || ''}
+                    onChange={(e) => handleHeroChange('backgroundImage', e.target.value)}
+                    className="w-full text-[10px] p-3 rounded-xl border border-slate-100 bg-slate-50 font-mono"
+                  />
+               </div>
+               <div className="flex items-center justify-between px-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Scroll Indicator</span>
+                  <button 
+                    onClick={() => handleHeroChange('showScrollIndicator', !localData.heroConfig?.showScrollIndicator)}
+                    className={cn("w-8 h-4 rounded-full relative transition-colors", localData.heroConfig?.showScrollIndicator ? "bg-emerald-500" : "bg-slate-200")}
+                  >
+                    <div className={cn("w-3 h-3 bg-white rounded-full absolute top-[2px] transition-transform", localData.heroConfig?.showScrollIndicator ? "translate-x-4" : "translate-x-1")} />
+                  </button>
+               </div>
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center justify-between">
+               Projects
+               <button onClick={handleAddProject} className="text-emerald-500 flex items-center gap-1 hover:bg-emerald-50 px-2 py-0.5 rounded transition-colors">
+                  <Plus className="w-3.5 h-3.5" /> <span className="text-[9px]">ADD</span>
+               </button>
+            </h3>
+            <div className="space-y-4">
+               {localData.projects.map((p: any, i: number) => (
+                 <div key={p.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm relative group">
+                    <button onClick={() => handleDeleteProject(i)} className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full items-center justify-center hidden group-hover:flex shadow-lg z-10 animate-in zoom-in">
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                    <div className="space-y-3">
+                       <input 
+                        type="text" 
+                        value={p.title} 
+                        onChange={(e) => handleUpdateProject(i, 'title', e.target.value)}
+                        className="text-sm font-bold w-full bg-transparent border-b border-transparent focus:border-slate-100 outline-none"
+                        placeholder="Project Title"
+                       />
+                       <textarea 
+                        value={p.description} 
+                        onChange={(e) => handleUpdateProject(i, 'description', e.target.value)}
+                        className="text-xs text-slate-500 w-full bg-transparent border-none outline-none resize-none"
+                        rows={2}
+                        placeholder="Short description..."
+                       />
+                       <div className="flex gap-2">
+                          <input 
+                            type="text" 
+                            value={p.imageUrl || ''} 
+                            onChange={(e) => handleUpdateProject(i, 'imageUrl', e.target.value)}
+                            className="flex-1 text-[9px] p-2 bg-slate-50 rounded-lg font-mono border border-transparent focus:border-slate-100"
+                            placeholder="Image URL"
+                          />
+                          <input 
+                            type="text" 
+                            value={p.link || ''} 
+                            onChange={(e) => handleUpdateProject(i, 'link', e.target.value)}
+                            className="flex-1 text-[9px] p-2 bg-slate-50 rounded-lg font-mono border border-transparent focus:border-slate-100"
+                            placeholder="Project Link"
+                          />
+                       </div>
+                    </div>
+                 </div>
+               ))}
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center justify-between">
+               Testimonials
+               <button onClick={() => handleChange('testimonials', [...(localData.testimonials || []), { id: Date.now().toString(), name: 'Client Name', role: 'CEO', quote: '' }])} className="text-emerald-500 flex items-center gap-1 hover:bg-emerald-50 px-2 py-0.5 rounded transition-colors">
+                  <Plus className="w-3.5 h-3.5" /> <span className="text-[9px]">ADD</span>
+               </button>
+            </h3>
+            <div className="space-y-4">
+              {localData.testimonials?.map((t: any, i: number) => (
+                <div key={t.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm relative group">
+                  <button onClick={() => {
+                    const updated = [...localData.testimonials];
+                    updated.splice(i, 1);
+                    handleChange('testimonials', updated);
+                  }} className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full items-center justify-center hidden group-hover:flex shadow-lg z-10 animate-in zoom-in">
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                  <textarea 
+                    value={t.quote} 
+                    onChange={(e) => {
+                       const updated = [...localData.testimonials];
+                       updated[i] = { ...updated[i], quote: e.target.value };
+                       handleChange('testimonials', updated);
+                    }}
+                    className="text-xs text-slate-600 font-medium italic w-full bg-transparent border-none outline-none resize-none mb-3"
+                    rows={2}
+                    placeholder="The feedback quote..."
+                  />
+                  <div className="flex gap-2">
+                     <input 
+                      type="text" 
+                      value={t.name}
+                      onChange={(e) => {
+                         const updated = [...localData.testimonials];
+                         updated[i] = { ...updated[i], name: e.target.value };
+                         handleChange('testimonials', updated);
+                      }}
+                      className="flex-1 text-[10px] font-bold p-2 bg-slate-50 rounded-lg border border-transparent"
+                      placeholder="Name"
+                     />
+                     <input 
+                      type="text" 
+                      value={t.role}
+                      onChange={(e) => {
+                         const updated = [...localData.testimonials];
+                         updated[i] = { ...updated[i], role: e.target.value };
+                         handleChange('testimonials', updated);
+                      }}
+                      className="flex-1 text-[10px] p-2 bg-slate-50 rounded-lg border border-transparent"
+                      placeholder="Role"
+                     />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center justify-between">
+               Expertise & Services
+               <button onClick={() => handleChange('services', [...(localData.services || []), { id: Date.now().toString(), title: 'New Service', description: '' }])} className="text-indigo-500 flex items-center gap-1 hover:bg-indigo-50 px-2 py-0.5 rounded transition-colors">
+                  <Plus className="w-3.5 h-3.5" /> <span className="text-[9px]">ADD</span>
+               </button>
+            </h3>
+            <div className="space-y-4">
+               {localData.services?.map((s: any, i: number) => (
+                 <div key={s.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative group">
+                    <button onClick={() => {
+                       const updated = [...localData.services];
+                       updated.splice(i, 1);
+                       handleChange('services', updated);
+                    }} className="absolute top-2 right-2 text-slate-300 hover:text-rose-500">
+                       <Trash2 className="w-3 h-3" />
+                    </button>
+                    <input 
+                      type="text" 
+                      value={s.title}
+                      onChange={(e) => {
+                         const updated = [...localData.services];
+                         updated[i] = { ...updated[i], title: e.target.value };
+                         handleChange('services', updated);
+                      }}
+                      className="text-xs font-bold w-full bg-transparent border-none outline-none mb-1"
+                      placeholder="Service Title"
+                    />
+                    <textarea 
+                      value={s.description}
+                      onChange={(e) => {
+                         const updated = [...localData.services];
+                         updated[i] = { ...updated[i], description: e.target.value };
+                         handleChange('services', updated);
+                      }}
+                      className="text-[10px] text-slate-500 w-full bg-transparent border-none outline-none resize-none"
+                      rows={2}
+                      placeholder="What do you offer?"
+                    />
+                 </div>
+               ))}
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center justify-between">
+               Awards & Recognition
+               <button onClick={() => handleChange('awards', [...(localData.awards || []), { id: Date.now().toString(), title: 'Award Name', organization: 'Org', year: '2024' }])} className="text-amber-500 flex items-center gap-1 hover:bg-amber-50 px-2 py-0.5 rounded transition-colors">
+                  <Plus className="w-3.5 h-3.5" /> <span className="text-[9px]">ADD</span>
+               </button>
+            </h3>
+            <div className="space-y-4">
+               {localData.awards?.map((a: any, i: number) => (
+                 <div key={a.id} className="p-4 bg-white rounded-2xl border border-slate-100 relative group flex gap-4 items-center">
+                    <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 shrink-0">
+                       <Award className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                       <input 
+                        type="text" 
+                        value={a.title}
+                        onChange={(e) => {
+                           const updated = [...localData.awards];
+                           updated[i] = { ...updated[i], title: e.target.value };
+                           handleChange('awards', updated);
+                        }}
+                        className="text-xs font-bold w-full bg-transparent border-none outline-none"
+                        placeholder="Award Name"
+                       />
+                       <div className="flex gap-2">
+                          <input 
+                            type="text" 
+                            value={a.issuer || ''}
+                            onChange={(e) => {
+                               const updated = [...localData.awards];
+                               updated[i] = { ...updated[i], issuer: e.target.value };
+                               handleChange('awards', updated);
+                            }}
+                            className="text-[10px] text-slate-500 bg-transparent border-none outline-none"
+                            placeholder="Organization / Issuer"
+                          />
+                          <input 
+                            type="text" 
+                            value={a.year}
+                            onChange={(e) => {
+                               const updated = [...localData.awards];
+                               updated[i] = { ...updated[i], year: e.target.value };
+                               handleChange('awards', updated);
+                            }}
+                            className="text-[10px] text-slate-400 bg-transparent border-none outline-none w-12"
+                            placeholder="Year"
+                          />
+                       </div>
+                    </div>
+                    <button onClick={() => {
+                       const updated = [...localData.awards];
+                       updated.splice(i, 1);
+                       handleChange('awards', updated);
+                    }} className="text-slate-300 hover:text-rose-500">
+                       <Trash2 className="w-3 h-3" />
+                    </button>
+                 </div>
+               ))}
+            </div>
+          </section>
         </div>
       );
     }
 
     if (sidebarTab === 'navigation') {
       return (
-        <div className="p-6 overflow-y-auto max-h-full space-y-8">
-          <div>
-            <div className="text-[10px] uppercase tracking-[0.1em] font-bold text-slate-400 mb-6 flex items-center gap-2">
-              <Link2 className="w-3.5 h-3.5" /> Site Navigation
-            </div>
-            <p className="text-xs text-slate-500 mb-6 font-medium leading-relaxed">
-              Each link represents a section on your portfolio. Add, remove, or reorder your menu.
-            </p>
+        <div className="p-6 space-y-8">
+           <div className="text-[10px] uppercase tracking-[0.1em] font-bold text-slate-400 flex items-center gap-2">
+            <Link2 className="w-3.5 h-3.5" /> Site Structure
           </div>
 
           <div className="space-y-4">
-            {(localData.navLinks || []).map((link: any, idx: number) => (
-              <div key={link.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm group relative">
-                 <button 
-                  onClick={() => {
-                    const newLinks = [...(localData.navLinks || [])];
-                    newLinks.splice(idx, 1);
-                    handleChange('navLinks', newLinks);
-                  }}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg z-10"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-                <div className="space-y-4">
+             {(localData.navLinks || []).map((link: any, idx: number) => (
+               <div key={link.id} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-4 relative group">
+                  <button onClick={() => {
+                    const nl = [...localData.navLinks];
+                    nl.splice(idx, 1);
+                    handleChange('navLinks', nl);
+                  }} className="absolute -top-2 -right-2 w-6 h-6 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-rose-500 hover:text-white transition-all shadow-sm">
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                  <input 
+                    type="text" 
+                    value={link.label}
+                    onChange={(e) => {
+                       const nl = [...localData.navLinks];
+                       nl[idx] = { ...nl[idx], label: e.target.value };
+                       handleChange('navLinks', nl);
+                    }}
+                    className="text-sm font-bold w-full outline-none"
+                    placeholder="Nav Label"
+                  />
                   <div>
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block mb-1.5 px-1">Label</label>
-                    <input 
-                      type="text" 
-                      value={link.label}
-                      onChange={(e) => {
-                        const newLinks = [...(localData.navLinks || [])];
-                        newLinks[idx] = { ...newLinks[idx], label: e.target.value };
-                        handleChange('navLinks', newLinks);
-                      }}
-                      placeholder="e.g. Work, About"
-                      className="w-full text-sm font-semibold text-slate-700 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 focus:border-emerald-500 focus:bg-white outline-none transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block mb-1.5 px-1">Linked Section</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { val: 'projects', label: 'Projects' },
-                        { val: 'experience', label: 'Work History' },
-                        { val: 'education', label: 'Education' },
-                        { val: 'skills', label: 'Expertise' },
-                        { val: 'about', label: 'Biography' },
-                        { val: 'contact', label: 'Contact' },
-                        { val: 'custom', label: 'External URL' }
-                      ].map(type => (
-                        <button 
-                          key={type.val}
-                          onClick={() => {
-                            const newLinks = [...(localData.navLinks || [])];
-                            newLinks[idx] = { 
-                              ...newLinks[idx], 
-                              sectionType: type.val,
-                              url: type.val === 'custom' ? link.url : `#${type.val}`
-                            };
-                            handleChange('navLinks', newLinks);
-                          }}
-                          className={cn(
-                            "py-2 px-3 rounded-lg border text-[10px] font-bold text-center transition-all",
-                            link.sectionType === type.val 
-                              ? "bg-slate-900 text-white border-slate-900 shadow-sm" 
-                              : "bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100"
-                          )}
-                        >
-                          {type.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {link.sectionType === 'custom' && (
-                    <div>
-                      <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 block mb-1.5 px-1">URL</label>
-                      <input 
-                        type="text" 
-                        value={link.url}
-                        onChange={(e) => {
-                          const newLinks = [...(localData.navLinks || [])];
-                          newLinks[idx] = { ...newLinks[idx], url: e.target.value };
-                          handleChange('navLinks', newLinks);
-                        }}
-                        placeholder="https://..."
-                        className="w-full text-xs font-mono text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 outline-none"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-            
-            <button 
-              onClick={() => {
-                const newId = Date.now().toString();
-                handleChange('navLinks', [...(localData.navLinks || []), { id: newId, label: 'Section', url: '#projects', sectionType: 'projects' }]);
-              }}
-              className="w-full py-4 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-xs font-bold uppercase hover:border-emerald-300 hover:text-emerald-500 hover:bg-emerald-50/30 transition-all flex items-center justify-center gap-2"
-            >
-              <Plus className="w-4 h-4" /> Add Section Link
-            </button>
-          </div>
-        </div>
-      );
-    }
-    
-    if (sidebarTab === 'search') {
-      return (
-        <div className="p-6">
-          <div className="text-[10px] uppercase tracking-[0.1em] font-bold text-slate-400 mb-5 flex items-center gap-2">
-            <Database className="w-3.5 h-3.5" /> Content Editor
-          </div>
-          <div className="space-y-5">
-            <div>
-              <label className="text-[11px] font-semibold text-slate-700 block mb-2">Display Name</label>
-              <input 
-                type="text" 
-                value={localData.name || ''} 
-                onChange={(e) => handleChange('name', e.target.value)}
-                className="w-full text-sm p-2.5 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" 
-              />
-            </div>
-            <div>
-              <label className="text-[11px] font-semibold text-slate-700 block mb-2">Profile Image URL</label>
-              <input 
-                type="text" 
-                placeholder="https://example.com/avatar.png"
-                value={localData.profileImage || ''} 
-                onChange={(e) => handleChange('profileImage', e.target.value)}
-                className="w-full text-sm p-2.5 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" 
-              />
-            </div>
-            <div>
-              <label className="text-[11px] font-semibold text-slate-700 block mb-2">Role / Headline</label>
-              <input 
-                type="text" 
-                value={localData.role} 
-                onChange={(e) => handleChange('role', e.target.value)}
-                className="w-full text-sm p-2.5 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500" 
-              />
-            </div>
-            <div>
-              <label className="text-[11px] font-semibold text-slate-700 block mb-2">Biography</label>
-              <textarea 
-                value={localData.bio} 
-                onChange={(e) => handleChange('bio', e.target.value)}
-                rows={3}
-                className="w-full text-sm p-2.5 rounded-lg border border-slate-200 bg-white resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500" 
-              />
-            </div>
-            
-            
-            <div className="pt-4 border-t border-slate-100">
-              <label className="text-[11px] font-semibold text-slate-700 block mb-2">Skills (comma separated)</label>
-              <textarea 
-                value={(localData.skills || []).join(', ')} 
-                onChange={(e) => handleChange('skills', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                rows={2}
-                className="w-full text-sm p-2.5 rounded-lg border border-slate-200 bg-white resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500" 
-                placeholder="e.g. React, UX Design, Copywriting"
-              />
-            </div>
-
-            <div className="pt-4 border-t border-slate-100">
-              <label className="text-[11px] font-semibold text-slate-700 block mb-2">Social Links</label>
-              <div className="space-y-2">
-                <input 
-                  type="text" 
-                  placeholder="Email Address"
-                  value={localData.socialLinks?.email || ''} 
-                  onChange={(e) => handleChange('socialLinks', { ...localData.socialLinks, email: e.target.value })}
-                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white" 
-                />
-                <input 
-                  type="text" 
-                  placeholder="LinkedIn URL"
-                  value={localData.socialLinks?.linkedin || ''} 
-                  onChange={(e) => handleChange('socialLinks', { ...localData.socialLinks, linkedin: e.target.value })}
-                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white mb-2" 
-                />
-                <input 
-                  type="text" 
-                  placeholder="GitHub URL"
-                  value={localData.socialLinks?.github || ''} 
-                  onChange={(e) => handleChange('socialLinks', { ...localData.socialLinks, github: e.target.value })}
-                  className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white" 
-                />
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-slate-100">
-              <div className="flex items-center justify-between mb-4">
-                <label className="text-[11px] font-semibold text-slate-700 block">Experience</label>
-                <button onClick={() => {
-                  const newExp = { id: Date.now().toString(), role: 'New Role', company: 'Company', startDate: '2023', endDate: 'Present', description: '' };
-                  handleChange('experience', [...(localData?.experience || []), newExp]);
-                }} className="text-[10px] bg-slate-100 px-2.5 py-1 rounded-md text-slate-600 font-medium hover:bg-slate-200 flex items-center gap-1">
-                  <Plus className="w-3 h-3" /> Add
-                </button>
-              </div>
-              <div className="space-y-3">
-                {(localData.experience || []).map((exp: any, i: number) => (
-                  <div key={exp.id} className="bg-slate-50 border border-slate-200 rounded-lg p-3 relative group">
-                    <button onClick={() => {
-                      const updated = [...(localData.experience || [])];
-                      updated.splice(i, 1);
-                      handleChange('experience', updated);
-                    }} className="absolute top-2 right-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                    <input 
-                      type="text" 
-                      placeholder="Job Title"
-                      value={exp.role} 
-                      onChange={(e) => {
-                        const updated = [...localData.experience];
-                        updated[i] = { ...updated[i], role: e.target.value };
-                        handleChange('experience', updated);
-                      }}
-                      className="w-full text-xs font-semibold p-1.5 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none mb-1"
-                    />
-                    <div className="flex gap-2">
-                       <input 
-                         type="text" 
-                         placeholder="Company"
-                         value={exp.company} 
-                         onChange={(e) => {
-                           const updated = [...localData.experience];
-                           updated[i] = { ...updated[i], company: e.target.value };
-                           handleChange('experience', updated);
-                         }}
-                         className="flex-1 text-xs px-1.5 py-1 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none mb-1 text-slate-600"
-                       />
-                       <input 
-                         type="text" 
-                         placeholder="Date (e.g. 2020-2023)"
-                         value={`${exp.startDate} - ${exp.endDate}`} 
-                         onChange={(e) => {
-                           const updated = [...localData.experience];
-                           const parts = e.target.value.split('-');
-                           updated[i] = { ...updated[i], startDate: parts[0]?.trim() || '', endDate: parts[1]?.trim() || '' };
-                           handleChange('experience', updated);
-                         }}
-                         className="flex-1 text-xs px-1.5 py-1 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none mb-1 text-slate-500 text-right"
-                       />
-                    </div>
-                    <textarea
-                      placeholder="Responsibility description..."
-                      value={exp.description || ''}
-                      onChange={(e) => {
-                         const updated = [...localData.experience];
-                         updated[i] = { ...updated[i], description: e.target.value };
-                         handleChange('experience', updated);
-                      }}
-                      rows={2}
-                      className="w-full text-xs p-1.5 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none resize-none mt-1 text-slate-600"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-slate-100">
-              <div className="flex items-center justify-between mb-4">
-                <label className="text-[11px] font-semibold text-slate-700 block">Education</label>
-                <button onClick={() => {
-                  const newEdu = { id: Date.now().toString(), degree: 'Degree', institution: 'Institution', year: '2023' };
-                  handleChange('education', [...(localData?.education || []), newEdu]);
-                }} className="text-[10px] bg-slate-100 px-2.5 py-1 rounded-md text-slate-600 font-medium hover:bg-slate-200 flex items-center gap-1">
-                  <Plus className="w-3 h-3" /> Add
-                </button>
-              </div>
-              <div className="space-y-3">
-                {(localData.education || []).map((edu: any, i: number) => (
-                  <div key={edu.id} className="bg-slate-50 border border-slate-200 rounded-lg p-3 relative group">
-                    <button onClick={() => {
-                      const updated = [...(localData.education || [])];
-                      updated.splice(i, 1);
-                      handleChange('education', updated);
-                    }} className="absolute top-2 right-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                    <input 
-                      type="text" 
-                      placeholder="Degree / Certificate"
-                      value={edu.degree} 
-                      onChange={(e) => {
-                        const updated = [...localData.education];
-                        updated[i] = { ...updated[i], degree: e.target.value };
-                        handleChange('education', updated);
-                      }}
-                      className="w-full text-xs font-semibold p-1.5 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none mb-1"
-                    />
-                    <div className="flex gap-2">
-                       <input 
-                         type="text" 
-                         placeholder="Institution"
-                         value={edu.institution} 
-                         onChange={(e) => {
-                           const updated = [...localData.education];
-                           updated[i] = { ...updated[i], institution: e.target.value };
-                           handleChange('education', updated);
-                         }}
-                         className="flex-1 text-xs px-1.5 py-1 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none mb-1 text-slate-600"
-                       />
-                       <input 
-                         type="text" 
-                         placeholder="Year"
-                         value={edu.year} 
-                         onChange={(e) => {
-                           const updated = [...localData.education];
-                           updated[i] = { ...updated[i], year: e.target.value };
-                           handleChange('education', updated);
-                         }}
-                         className="w-16 text-xs px-1.5 py-1 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none mb-1 text-slate-500 text-right"
-                       />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-slate-100">
-              <div className="flex items-center justify-between mb-4">
-                <label className="text-[11px] font-semibold text-slate-700 block">Projects</label>
-                <button onClick={handleAddProject} className="text-[10px] bg-slate-100 px-2.5 py-1 rounded-md text-slate-600 font-medium hover:bg-slate-200 flex items-center gap-1">
-                  <Plus className="w-3 h-3" /> Add
-                </button>
-              </div>
-              <div className="space-y-3">
-                {localData.projects.map((p: any, i: number) => (
-                  <div key={p.id} className="bg-slate-50 border border-slate-200 rounded-lg p-3 relative group">
-                    <button onClick={() => handleDeleteProject(i)} className="absolute top-2 right-2 text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                    <input 
-                      type="text" 
-                      placeholder="Project Title"
-                      value={p.title} 
-                      onChange={(e) => handleUpdateProject(i, 'title', e.target.value)}
-                      className="w-full text-xs font-semibold p-1.5 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none mb-1"
-                    />
-                    <textarea
-                      placeholder="Description"
-                      value={p.description || ''}
-                      onChange={(e) => handleUpdateProject(i, 'description', e.target.value)}
-                      rows={2}
-                      className="w-full text-xs p-1.5 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none resize-none mb-1 text-slate-600"
-                    />
-                    <input 
-                      type="text" 
-                      placeholder="Project URL"
-                      value={p.link || ''} 
-                      onChange={(e) => handleUpdateProject(i, 'link', e.target.value)}
-                      className="w-full text-[10px] p-1.5 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none mb-1 text-slate-500"
-                    />
-                    <input 
-                      type="text" 
-                      placeholder="Project Image URL"
-                      value={p.imageUrl || ''} 
-                      onChange={(e) => handleUpdateProject(i, 'imageUrl', e.target.value)}
-                      className="w-full text-[10px] p-1.5 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none mb-1 text-slate-500"
-                    />
-                    <div className="flex items-center gap-2 mt-2 text-[10px]">
-                      <span className="text-slate-500">Color:</span>
-                      {['bg-slate-100', 'bg-slate-200', 'bg-slate-800', 'bg-emerald-100', 'bg-rose-100'].map(bg => (
-                        <button 
-                          key={bg} 
-                          onClick={() => handleUpdateProject(i, 'imageBg', bg)}
-                          className={cn("w-4 h-4 rounded-full border border-slate-200", bg, p.imageBg === bg && "ring-2 ring-emerald-500 ring-offset-1")}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                {localData.projects.length === 0 && (
-                  <p className="text-xs text-slate-400 italic text-center py-4">No projects added yet.</p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    
-    if (sidebarTab === 'layers') {
-      return (
-        <div className="p-5 overflow-y-auto max-h-full space-y-8">
-          <div className="flex items-center gap-2 mb-2">
-            <Settings className="w-3 h-3 text-slate-400" />
-            <div className="text-[10px] uppercase tracking-[0.1em] font-bold text-slate-400">Customization Controls</div>
-          </div>
-          
-          <div className="space-y-6">
-            <div>
-               <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer" onClick={() => handleChange('theme', localData.theme === 'dark' ? 'light' : 'dark')}>
-                  <span className="text-xs font-bold text-slate-700">Dark Mode</span>
-                  <button 
-                    className={cn(
-                      "w-8 h-4 rounded-full relative transition-colors duration-300 pointer-events-none",
-                      localData.theme === 'dark' ? "bg-slate-900" : "bg-slate-200"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-3 h-3 bg-white rounded-full absolute top-[1.5px] shadow-sm transition-transform duration-300",
-                      localData.theme === 'dark' ? "translate-x-4" : "translate-x-0.5"
-                    )} />
-                  </button>
-               </div>
-            </div>
-
-            <div className="pt-4 border-t border-slate-100">
-              <label className="text-[11px] font-semibold text-slate-700 block mb-2.5">Hero Background</label>
-              <div className="space-y-3">
-                <input 
-                  type="text" 
-                  placeholder="Hero Background Image URL"
-                  value={localData.heroConfig?.backgroundImage || ''}
-                  onChange={(e) => handleChange('heroConfig', { ...localData.heroConfig, backgroundImage: e.target.value })}
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 bg-white"
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[9px] font-bold uppercase text-slate-400 block mb-1">Text Color</label>
-                    <select 
-                      value={localData.heroConfig?.textColor || 'auto'}
-                      onChange={(e) => handleChange('heroConfig', { ...localData.heroConfig, textColor: e.target.value })}
-                      className="w-full text-[10px] p-2 bg-white border border-slate-200 rounded-lg outline-none"
-                    >
-                      <option value="auto">Auto</option>
-                      <option value="white">White</option>
-                      <option value="dark">Dark</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[9px] font-bold uppercase text-slate-400 block mb-1">Alignment</label>
-                    <select 
-                      value={localData.heroConfig?.alignment || 'left'}
-                      onChange={(e) => handleChange('heroConfig', { ...localData.heroConfig, alignment: e.target.value })}
-                      className="w-full text-[10px] p-2 bg-white border border-slate-200 rounded-lg outline-none"
-                    >
-                      <option value="left">Left</option>
-                      <option value="center">Center</option>
-                      <option value="right">Right</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-slate-100">
-              <label className="text-[11px] font-semibold text-slate-700 block mb-2.5">Navigation Hover Effect</label>
-              <div className="grid grid-cols-2 gap-2">
-                {(['underline', 'background', 'scale', 'glow', 'strikethrough'] as const).map(effect => (
-                  <button 
-                    key={effect}
-                    onClick={() => handleChange('hoverEffect', effect)}
-                    className={cn(
-                      "py-2.5 px-3 rounded-lg border text-[10px] font-bold text-center transition-all",
-                      localData.hoverEffect === effect 
-                        ? "bg-slate-900 text-white border-slate-900 shadow-md" 
-                        : "bg-white border-slate-100 text-slate-500 hover:border-slate-300"
-                    )}
-                  >
-                    {effect}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-slate-100">
-              <label className="text-[11px] font-semibold text-slate-700 block mb-2.5">Template</label>
-              <div className="grid grid-cols-2 gap-2.5">
-                {(['editorial', 'minimalist'] as const).map(t => (
-                  <button
-                    key={t}
-                    onClick={() => handleChange('template', t)}
-                    className={cn(
-                      "h-12 border rounded-lg flex items-center justify-center text-[10px] font-bold capitalize transition-all",
-                      localData.template === t 
-                        ? "border-slate-900 bg-white text-slate-900 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.1)]" 
-                        : "border-slate-200 bg-slate-50/50 text-slate-400 hover:bg-slate-50 hover:text-slate-600"
-                    )}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-[11px] font-semibold text-slate-700 block mb-2.5">Typography</label>
-              <div className="grid grid-cols-2 gap-2">
-                {(['serif-sans', 'mono', 'outfit', 'jakarta', 'space', 'cormorant'] as const).map(f => (
-                  <button 
-                    key={f}
-                    onClick={() => handleChange('font', f)}
-                    className={cn(
-                      "p-3 rounded-xl border text-left transition-all",
-                      localData.font === f ? "bg-slate-900 text-white border-slate-900 shadow-lg" : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-                    )}
-                  >
-                    <div className="text-[9px] font-bold uppercase mb-1 opacity-60 tracking-widest leading-none">{f.split('-')[0]}</div>
-                    <div className={cn(
-                      "text-sm leading-tight truncate",
-                      f === 'serif-sans' && "font-serif",
-                      f === 'mono' && "font-mono",
-                      f === 'outfit' && "font-[Outfit]",
-                      f === 'jakarta' && "font-[Plus_Jakarta_Sans]",
-                      f === 'space' && "font-[Space_Grotesk]",
-                      f === 'cormorant' && "font-[Cormorant_Garamond]"
-                    )}>Type Spec</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-[11px] font-semibold text-slate-700 block mb-2.5">Accent Color</label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['emerald', 'indigo', 'rose', 'slate', 'amber', 'violet'] as const).map(color => (
-                  <button 
-                    key={color}
-                    onClick={() => handleChange('accentColor', color)}
-                    className={cn(
-                      "flex items-center gap-2 p-2 rounded-lg border text-[10px] font-medium transition-all",
-                      localData.accentColor === color ? "bg-slate-900 text-white border-slate-900 shadow-md" : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-                    )}
-                  >
-                    <div className={cn("w-3 h-3 rounded-full shadow-inner", {
-                      'bg-emerald-500': color === 'emerald',
-                      'bg-indigo-500': color === 'indigo',
-                      'bg-rose-500': color === 'rose',
-                      'bg-slate-900': color === 'slate',
-                      'bg-amber-500': color === 'amber',
-                      'bg-violet-500': color === 'violet'
-                    })} />
-                    {color}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-5 border-t border-slate-100">
-               <label className="text-[11px] font-semibold text-slate-700 block mb-3.5">Visible Sections</label>
-               <div className="space-y-3">
-                 {['projects', 'experience', 'education', 'skills'].map(section => {
-                   const isHidden = localData.hiddenSections?.includes(section);
-                   return (
-                     <div key={section} className="flex items-center justify-between cursor-pointer" onClick={() => {
-                        const hidden = localData.hiddenSections || [];
-                        if (isHidden) {
-                          handleChange('hiddenSections', hidden.filter((s: string) => s !== section));
-                        } else {
-                          handleChange('hiddenSections', [...hidden, section]);
-                        }
-                     }}>
-                        <span className="text-[11px] capitalize text-slate-600">{section}</span>
-                        <button 
-                          className={cn(
-                            "w-8 h-4 rounded-full relative transition-colors duration-300 pointer-events-none",
-                            !isHidden ? "bg-emerald-500" : "bg-slate-200"
-                          )}
-                        >
-                          <div className={cn(
-                            "w-3 h-3 bg-white rounded-full absolute top-[1.5px] shadow-sm transition-transform duration-300",
-                            !isHidden ? "translate-x-4" : "translate-x-0.5"
-                          )} />
-                        </button>
+                     <label className="text-[9px] font-bold text-slate-400 uppercase mb-2 block">Linked Content</label>
+                     <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { id: 'projects', icon: Box },
+                          { id: 'services', icon: Briefcase },
+                          { id: 'testimonials', icon: Quote },
+                          { id: 'experience', icon: Clock },
+                          { id: 'awards', icon: Award },
+                          { id: 'contact', icon: Settings },
+                          { id: 'custom', icon: Globe }
+                        ].map(type => (
+                          <button 
+                            key={type.id}
+                            onClick={() => {
+                               const nl = [...localData.navLinks];
+                               nl[idx] = { ...nl[idx], sectionType: type.id, url: type.id === 'custom' ? link.url : `#${type.id}` };
+                               handleChange('navLinks', nl);
+                            }}
+                            className={cn(
+                              "p-1.5 rounded-lg border flex items-center gap-1.5 transition-all text-[9px] font-bold uppercase",
+                              link.sectionType === type.id ? "bg-indigo-500 text-white border-indigo-500" : "bg-slate-50 text-slate-400 border-transparent hover:bg-slate-100"
+                            )}
+                          >
+                            <type.icon className="w-3 h-3" />
+                            {type.id}
+                          </button>
+                        ))}
                      </div>
-                   );
-                 })}
+                  </div>
                </div>
-            </div>
-
-            <div className="pt-5 border-t border-slate-100">
-               <div className="flex items-center justify-between mb-3.5 cursor-pointer" onClick={() => handleChange('isPublished', !localData.isPublished)}>
-                  <span className="text-[11px] font-semibold text-slate-600">Visibility (Public)</span>
-                  <button 
-                    className={cn(
-                      "w-8 h-4 rounded-full relative transition-colors duration-300 pointer-events-none",
-                      localData.isPublished ? "bg-emerald-500" : "bg-slate-200"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-3 h-3 bg-white rounded-full absolute top-[1.5px] shadow-sm transition-transform duration-300",
-                      localData.isPublished ? "translate-x-4" : "translate-x-0.5"
-                    )} />
-                  </button>
-               </div>
-               <div className="flex items-center justify-between cursor-pointer" onClick={() => handleChange('seoAutoIndex', !localData.seoAutoIndex)}>
-                  <span className="text-[11px] font-semibold text-slate-600">SEO Auto-Index</span>
-                  <button 
-                    className={cn(
-                      "w-8 h-4 rounded-full relative transition-colors duration-300 pointer-events-none",
-                      localData.seoAutoIndex ? "bg-emerald-500" : "bg-slate-200"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-3 h-3 bg-white rounded-full absolute top-[1.5px] shadow-sm transition-transform duration-300",
-                      localData.seoAutoIndex ? "translate-x-4" : "translate-x-0.5"
-                    )} />
-                  </button>
-               </div>
-            </div>
+             ))}
+             <button 
+              onClick={() => handleChange('navLinks', [...(localData.navLinks || []), { id: Date.now().toString(), label: 'Section', url: '#', sectionType: 'projects' }])}
+              className="w-full py-3 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 font-bold text-[10px] uppercase hover:bg-slate-50 transition-colors"
+             >
+                + Add Navigation Item
+             </button>
           </div>
         </div>
       );
     }
-    
+
     return null; // fallback
   };
 
@@ -747,16 +724,32 @@ export default function Editor() {
         <div className="flex-1 flex flex-col gap-6">
           <button 
             onClick={() => { 
-              setSidebarTab('dashboard'); 
+              setSidebarTab('design'); 
               if (window.innerWidth < 768) {
                 setIsMobileNavOpen(false);
                 setIsMobileEditorOpen(true);
               }
             }}
-            className={cn("p-2 rounded-lg transition-colors", sidebarTab === 'dashboard' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
+            className={cn("p-2 rounded-lg transition-colors relative group", sidebarTab === 'design' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
           >
-            <LayoutDashboard className="w-5 h-5" />
+            <Palette className="w-5 h-5" />
+            <span className="absolute left-14 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">Design Styles</span>
           </button>
+          
+          <button 
+            onClick={() => { 
+              setSidebarTab('content'); 
+              if (window.innerWidth < 768) {
+                setIsMobileNavOpen(false);
+                setIsMobileEditorOpen(true);
+              }
+            }}
+            className={cn("p-2 rounded-lg transition-colors relative group", sidebarTab === 'content' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
+          >
+            <Database className="w-5 h-5" />
+            <span className="absolute left-14 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">Content Editor</span>
+          </button>
+
           <button 
             onClick={() => { 
               setSidebarTab('navigation'); 
@@ -765,33 +758,10 @@ export default function Editor() {
                 setIsMobileEditorOpen(true);
               }
             }}
-            className={cn("p-2 rounded-lg transition-colors", sidebarTab === 'navigation' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
+            className={cn("p-2 rounded-lg transition-colors relative group", sidebarTab === 'navigation' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
           >
             <Link2 className="w-5 h-5" />
-          </button>
-          <button 
-            onClick={() => { 
-              setSidebarTab('search'); 
-              if (window.innerWidth < 768) {
-                setIsMobileNavOpen(false);
-                setIsMobileEditorOpen(true);
-              }
-            }}
-            className={cn("p-2 rounded-lg transition-colors", sidebarTab === 'search' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
-          >
-            <Database className="w-5 h-5" />
-          </button>
-          <button 
-            onClick={() => { 
-              setSidebarTab('layers'); 
-              if (window.innerWidth < 768) {
-                setIsMobileNavOpen(false);
-                setIsMobileEditorOpen(true);
-              }
-            }}
-            className={cn("p-2 rounded-lg transition-colors", sidebarTab === 'layers' ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-white")}
-          >
-            <Layers className="w-5 h-5" />
+            <span className="absolute left-14 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">Site Nav</span>
           </button>
         </div>
         <div className="mt-auto flex flex-col gap-4 items-center">

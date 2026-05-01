@@ -32,23 +32,28 @@ service cloud.firestore {
         && data.ownerId == userId
         && data.theme in ['light', 'dark']
         && data.template is string && data.template.size() <= 60
-        && ( !('font' in data) || (data.font is string && data.font.size() <= 60) )
-        && ( !('accentColor' in data) || (data.accentColor is string && data.accentColor.size() <= 60) )
+        && ( !('font' in data) || (data.font is string && data.font.size() <= 100) )
+        && ( !('accentColor' in data) || (data.accentColor is string && data.accentColor.size() <= 100) )
         && ( !('isPublished' in data) || data.isPublished is bool )
         && ( !('seoAutoIndex' in data) || data.seoAutoIndex is bool )
+        && ( !('seoMetaTitle' in data) || (data.seoMetaTitle is string && data.seoMetaTitle.size() <= 200) )
+        && ( !('seoMetaDescription' in data) || (data.seoMetaDescription is string && data.seoMetaDescription.size() <= 1000) )
         && ( !('name' in data) || (data.name is string && data.name.size() <= 200) )
         && ( !('role' in data) || (data.role is string && data.role.size() <= 200) )
         && ( !('bio' in data) || (data.bio is string && data.bio.size() <= 5000) )
         && ( !('profileImage' in data) || (data.profileImage is string && data.profileImage.size() <= 5000) )
         && ( !('projects' in data) || (data.projects is list && data.projects.size() <= 100) )
-        && ( !('navLinks' in data) || (data.navLinks is list && data.navLinks.size() <= 20) )
+        && ( !('navLinks' in data) || (data.navLinks is list && data.navLinks.size() <= 50) )
         && ( !('hoverEffect' in data) || (data.hoverEffect is string && data.hoverEffect.size() <= 100) )
-        && ( !('heroConfig' in data) || (data.heroConfig is map && data.heroConfig.keys().size() <= 10) )
+        && ( !('heroConfig' in data) || (data.heroConfig is map) )
+        && ( !('designConfig' in data) || (data.designConfig is map) )
         && ( !('skills' in data) || (data.skills is list && data.skills.size() <= 200) )
         && ( !('experience' in data) || (data.experience is list && data.experience.size() <= 100) )
         && ( !('education' in data) || (data.education is list && data.education.size() <= 100) )
         && ( !('certifications' in data) || (data.certifications is list && data.certifications.size() <= 100) )
         && ( !('testimonials' in data) || (data.testimonials is list && data.testimonials.size() <= 100) )
+        && ( !('services' in data) || (data.services is list && data.services.size() <= 100) )
+        && ( !('awards' in data) || (data.awards is list && data.awards.size() <= 100) )
         && ( !('socialLinks' in data) || (data.socialLinks is map) )
         && ( !('sectionOrder' in data) || (data.sectionOrder is list) )
         && ( !('hiddenSections' in data) || (data.hiddenSections is list) )
@@ -68,7 +73,7 @@ service cloud.firestore {
         && isValidId(userId)
         && request.auth.uid == userId
         && isValidUser(incoming(), userId)
-        && incoming().role == 'user'; // cannot self-assign admin
+        && incoming().role == 'user'; // cannot selfassign admin
 
       allow update: if isSignedIn()
         && (request.auth.uid == userId || isAdmin())
@@ -93,7 +98,7 @@ service cloud.firestore {
       allow update: if isSignedIn()
         && (request.auth.uid == userId || isAdmin())
         && isValidPortfolio(incoming(), userId)
-        && incoming().diff(existing()).affectedKeys().hasOnly(['ownerId', 'name', 'role', 'bio', 'profileImage', 'theme', 'template', 'font', 'accentColor', 'isPublished', 'seoAutoIndex', 'projects', 'navLinks', 'hoverEffect', 'heroConfig', 'skills', 'experience', 'education', 'certifications', 'testimonials', 'socialLinks', 'sectionOrder', 'hiddenSections', 'updatedAt'])
+        && incoming().diff(existing()).affectedKeys().hasOnly(['ownerId', 'name', 'role', 'bio', 'profileImage', 'theme', 'template', 'font', 'accentColor', 'isPublished', 'seoAutoIndex', 'seoMetaTitle', 'seoMetaDescription', 'projects', 'navLinks', 'hoverEffect', 'heroConfig', 'designConfig', 'skills', 'experience', 'education', 'certifications', 'testimonials', 'services', 'awards', 'socialLinks', 'sectionOrder', 'hiddenSections', 'updatedAt'])
         && incoming().ownerId == existing().ownerId;
     }
 
